@@ -40,18 +40,17 @@ class Ratfish extends StatelessWidget {
             return MaterialPageRoute<void>(
               settings: routeSettings,
               builder: (BuildContext context) {
+                var map = routeSettings.arguments as Map? ?? {};
                 return switch (routeSettings.name) {
                   LoginView.routeName => const LoginView(),
                   SettingsView.routeName => const SettingsView(),
                   ChatsGroupListView.routeName => const ChatsGroupListView(),
-                  ChatGroupView.routeName => ChatGroupView(
-                      (routeSettings.arguments as Map)["chatGroupId"]
-                          as String),
-                  AccountView.routeName => AccountView(
-                      (routeSettings.arguments as Map)["accountId"] as String),
+                  ChatGroupView.routeName =>
+                    ChatGroupView(map["chatGroupId"] as String),
+                  AccountView.routeName =>
+                    AccountView(map["accountId"] as String),
                   ChatView.routeName => ChatView(
-                      (routeSettings.arguments as Map)["chatGroupId"] as String,
-                      (routeSettings.arguments as Map)["chatId"] as String),
+                      map["chatGroupId"] as String, map["chatId"] as String),
                   _ => const ChatsGroupListView()
                 };
               },

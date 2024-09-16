@@ -1,38 +1,43 @@
 class Message {
   final String id;
-  final String text;
-  final DateTime createdAt;
+  final String chatId;
   final String senderId;
+  final String content;
+  final String timestamp;
 
   Message({
     required this.id,
-    required this.text,
-    required this.createdAt,
+    required this.chatId,
     required this.senderId,
+    required this.content,
+    required this.timestamp,
   });
 
   static Message empty = Message(
     id: "",
-    text: "",
-    createdAt: DateTime.now(),
+    chatId: "",
     senderId: "",
+    content: "",
+    timestamp: "",
   );
 
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
       id: map['id'],
-      text: map['text'],
-      createdAt: DateTime.parse(map['createdAt']),
+      chatId: map['chatId'],
       senderId: map['senderId'],
+      content: map['content'],
+      timestamp: map['timestamp'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'text': text,
-      'createdAt': createdAt.toIso8601String(),
+      'chatId': chatId,
       'senderId': senderId,
+      'content': content,
+      'timestamp': timestamp,
     };
   }
 }

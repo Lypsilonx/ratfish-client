@@ -3,11 +3,13 @@ import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:flutter/material.dart';
+import 'package:ratfish/src/views/chat_view.dart';
 
 class ChatGroupCard extends StatefulWidget {
   final String chatGroupId;
+  final bool openChat;
 
-  ChatGroupCard(this.chatGroupId);
+  const ChatGroupCard(this.chatGroupId, {this.openChat = false, super.key});
 
   @override
   State<ChatGroupCard> createState() => _ChatGroupCardState();
@@ -44,9 +46,15 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
               chatGroup.name,
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () {
-              Navigator.pushNamed(context, ChatGroupView.routeName,
-                  arguments: {"chatGroupId": chatGroup.id});
+            onTap: () async {
+              if (!widget.openChat) {
+                Navigator.pushNamed(context, ChatGroupView.routeName,
+                    arguments: {"chatGroupId": chatGroup.id});
+              } else {
+                var chatId = await Client.getChatIdGroup(chatGroup.id);
+                Navigator.pushNamed(context, ChatView.routeName,
+                    arguments: {"chatGroupId": chatGroup.id, "chatId": chatId});
+              }
             },
             onLongPress: () {
               showDialog(

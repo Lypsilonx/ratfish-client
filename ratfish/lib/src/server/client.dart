@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/chat.dart';
 import 'package:ratfish/src/server/chatGroup.dart';
 import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/server/response.dart';
@@ -23,6 +22,7 @@ class Client {
     try {
       var request =
           "http://politischdekoriert.de/ratfish-api/endpoint.php?data=${Uri.encodeComponent(jsonEncode(data))}";
+      // print("GET: $request");
       var response = await http.read(Uri.parse(request));
       return Response.fromString(response);
     } catch (e) {
@@ -139,21 +139,6 @@ class Client {
     return ChatGroup.fromMap(response.body);
   }
 
-  static Future<Chat> getChat(String chatId) async {
-    var response = await get(
-      {
-        "action": "getChat",
-        "chatId": chatId,
-      },
-    );
-
-    if (response.statusCode != 200) {
-      return Chat.empty;
-    }
-
-    return Chat.fromMap(response.body);
-  }
-
   static Future<Message> getMessage(String messageId) async {
     var response = await get(
       {
@@ -167,6 +152,68 @@ class Client {
     }
 
     return Message.fromMap(response.body);
+  }
+
+  static Future<List<String>> getChatMembers(String chatId) async {
+    var response = await get(
+      {
+        "action": "getChatMembers",
+        "chatId": chatId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return [];
+    }
+
+    return response.body["accountIds"].cast<String>();
+  }
+
+  static Future<List<String>> getChatMessages(String chatId) async {
+    var response = await get(
+      {
+        "action": "getChatMessages",
+        "chatId": chatId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return [];
+    }
+
+    return response.body["messageIds"].cast<String>();
+  }
+
+  static getChatIdGroup(String chatGroupId) async {
+    var response = await get(
+      {
+        "action": "getChatIdGroup",
+        "chatGroupId": chatGroupId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return "";
+    }
+
+    return response.body["chatId"];
+  }
+
+  static getChatIdAccount(String chatGroupId, String accountId) async {
+    var response = await get(
+      {
+        "action": "getChatIdAccount",
+        "userId": instance.self.id,
+        "chatGroupId": chatGroupId,
+        "accountId": accountId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return "";
+    }
+
+    return response.body["chatId"];
   }
 
   static Future<List<String>> getChatGroupIds() async {
@@ -214,7 +261,7 @@ class Client {
       return response.body["message"];
     }
 
-    return "OK";
+    return joinChatGroup(response.body["chatGroupId"].toString());
   }
 
   static Future<String> joinChatGroup(String chatGroupId) async {

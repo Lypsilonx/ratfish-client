@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:ratfish/src/elements/account_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
-import 'package:ratfish/src/server/chat.dart';
 import 'package:ratfish/src/server/chatGroup.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
@@ -55,6 +54,8 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
+
+    updateChat();
     //call updateChat every 20 seconds
     updateTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
       updateChat();
@@ -75,17 +76,17 @@ class _ChatViewState extends State<ChatView> {
       _messages.clear();
     });
 
-    var chat = await Client.getChat(widget.chatId);
+    var messageIds = await Client.getChatMessages(widget.chatId);
 
-    for (var messageId in chat.messageIds) {
+    for (var messageId in messageIds) {
       var message = await Client.getMessage(messageId);
 
       _messages.add(
-        types.CustomMessage(
-          author: types.User(id: message.senderId),
-          createdAt: message.createdAt.millisecondsSinceEpoch,
+        types.TextMessage(
           id: messageId,
-          metadata: {"type": "text", "content": message.text},
+          author: types.User(id: message.senderId),
+          createdAt: int.parse(message.timestamp),
+          text: message.content,
         ),
       );
     }
@@ -100,100 +101,76 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   Widget build(BuildContext context) {
-    Future<Chat> chat = Client.getChat(widget.chatId);
-    return FutureBuilder<Chat>(
-      future: chat,
+    Future<List<String>> futureChatMemberIds =
+        Client.getChatMembers(widget.chatId);
+    Future<ChatGroup> futureChatGroup = Client.getChatGroup(widget.chatGroupId);
+    return FutureBuilder(
+      future: Future.wait([futureChatMemberIds, futureChatGroup]),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
             body: ListTile(
               leading: const Icon(Icons.error),
               title: Text(
-                  "Error loading chat: ${widget.chatId} (${snapshot.error})"),
+                  "Error loading chat: ${widget.chatId},${widget.chatGroupId} (${snapshot.error})"),
             ),
           );
         }
 
         if (snapshot.hasData) {
-          Chat chat = snapshot.data!;
+          ChatGroup chatGroup = snapshot.data![1] as ChatGroup;
+          List<String> chatMemberIds = snapshot.data![0] as List<String>;
 
-          Future<ChatGroup> chatGroup = Client.getChatGroup(widget.chatGroupId);
-          return FutureBuilder<ChatGroup>(
-            future: chatGroup,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return ListTile(
-                  leading: const Icon(Icons.error),
-                  title: Text(
-                      "Error loading chat: ${widget.chatGroupId} (${snapshot.error})"),
-                );
-              }
+          bool isGroup = chatMemberIds.length != 2;
+          String id = isGroup
+              ? chatGroup.id
+              : chatMemberIds
+                  .firstWhere((element) => element != Client.instance.self.id);
 
-              if (snapshot.hasData) {
-                ChatGroup chatGroup = snapshot.data!;
-
-                bool isGroup = chat.memberIds.length > 2;
-                String id = isGroup
-                    ? chatGroup.id
-                    : chat.memberIds.firstWhere(
-                        (element) => element != Client.instance.self.id);
-
-                return Scaffold(
-                  appBar: AppBar(
-                    title: isGroup ? ChatGroupCard(id) : AccountCard(id),
-                    actions: [
-                      SizedBox(
-                        width: 55,
-                        child: IconButton(
-                          icon: const Icon(Icons.refresh),
-                          onPressed: updateChat,
-                        ),
-                      ),
-                    ],
+          return Scaffold(
+            appBar: AppBar(
+              title: isGroup ? ChatGroupCard(id) : AccountCard(id),
+              actions: [
+                SizedBox(
+                  width: 55,
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: updateChat,
                   ),
-                  body: Stack(
-                    children: [
-                      chat_ui.Chat(
-                        emptyState: messagesLoaded
-                            ? const Center(child: Text("No messages"))
-                            : const Center(child: CircularProgressIndicator()),
-                        messages: messagesLoaded ? _messages : _messagesCache,
-                        onSendPressed: (message) =>
-                            _handleSendPressed(message, id),
-                        user: widget._sender,
-                        theme: RatfishChatTheme.fromTheme(Theme.of(context)),
-                        customMessageBuilder: (message,
-                            {required int messageWidth}) {
-                          switch (message.type) {
-                            case types.MessageType.text:
-                              return Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Text(message.metadata!["content"]),
-                              );
-                            default:
-                              return const Text("Unknown message type");
-                          }
-                        },
-                      ),
-                      SizedBox(
-                        height: 2,
-                        width: 430,
-                        child: messagesLoaded
-                            ? null
-                            : const Center(child: LinearProgressIndicator()),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                return Scaffold(
-                  body: ListTile(
-                    leading: const CircularProgressIndicator(),
-                    title: Text("Loading... (${widget.chatGroupId})"),
-                  ),
-                );
-              }
-            },
+                ),
+              ],
+            ),
+            body: Stack(
+              children: [
+                chat_ui.Chat(
+                  emptyState: messagesLoaded
+                      ? const Center(child: Text("No messages"))
+                      : const Center(child: CircularProgressIndicator()),
+                  messages: messagesLoaded ? _messages : _messagesCache,
+                  onSendPressed: (message) => _handleSendPressed(message, id),
+                  user: widget._sender,
+                  theme: RatfishChatTheme.fromTheme(Theme.of(context)),
+                  customMessageBuilder: (message, {required int messageWidth}) {
+                    switch (message.type) {
+                      case types.MessageType.text:
+                        return Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Text(message.metadata!["content"]),
+                        );
+                      default:
+                        return const Text("Unknown message type");
+                    }
+                  },
+                ),
+                SizedBox(
+                  height: 2,
+                  width: 430,
+                  child: messagesLoaded
+                      ? null
+                      : const Center(child: LinearProgressIndicator()),
+                ),
+              ],
+            ),
           );
         } else {
           return Scaffold(
@@ -213,9 +190,10 @@ class _ChatViewState extends State<ChatView> {
         await Client.addMessage(
           Message(
             id: message.id,
-            text: (message as types.TextMessage).text,
-            createdAt: DateTime.fromMillisecondsSinceEpoch(message.createdAt!),
+            chatId: widget.chatId,
             senderId: widget._sender.id,
+            content: (message as types.TextMessage).text,
+            timestamp: "",
           ),
         );
         break;

@@ -1,4 +1,5 @@
 import 'package:ratfish/src/elements/account_card.dart';
+import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
 import 'package:ratfish/src/server/chatGroup.dart';
@@ -7,7 +8,7 @@ import 'package:flutter/material.dart';
 class ChatGroupView extends StatefulWidget {
   final String chatGroupId;
 
-  ChatGroupView(this.chatGroupId, {super.key});
+  const ChatGroupView(this.chatGroupId, {super.key});
 
   static const routeName = '/chat_group';
 
@@ -38,7 +39,6 @@ class _ChatGroupViewState extends State<ChatGroupView> {
           var chatGroupAccountIds = Client.getChatGroupAccountIds(chatGroup.id);
 
           return Scaffold(
-            bottomNavigationBar: NavBar(ChatGroupView.routeName),
             appBar: AppBar(
               title: Text(
                 chatGroup.name,
@@ -63,7 +63,14 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                     return ListView(
                       controller: ScrollController(),
                       children: [
-                        ...accountIds.map(
+                        Padding(
+                          padding: const EdgeInsets.only(left: 20, right: 40),
+                          child: ChatGroupCard(chatGroup.id, openChat: true),
+                        ),
+                        ...accountIds
+                            .where((accountId) =>
+                                accountId != Client.instance.self.id)
+                            .map(
                           (accountId) {
                             return Padding(
                               padding:
@@ -76,9 +83,11 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                       ],
                     );
                   } else {
-                    return ListTile(
-                      leading: const CircularProgressIndicator(),
-                      title: Text("Loading... (${chatGroup.id})"),
+                    return Scaffold(
+                      body: ListTile(
+                        leading: const CircularProgressIndicator(),
+                        title: Text("Loading... (${chatGroup.id})"),
+                      ),
                     );
                   }
                 },
@@ -87,7 +96,6 @@ class _ChatGroupViewState extends State<ChatGroupView> {
           );
         } else {
           return Scaffold(
-            bottomNavigationBar: NavBar(ChatGroupView.routeName),
             body: ListTile(
               leading: const CircularProgressIndicator(),
               title: Text("Loading... (${widget.chatGroupId})"),

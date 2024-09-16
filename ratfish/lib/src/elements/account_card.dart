@@ -8,7 +8,7 @@ class AccountCard extends StatefulWidget {
   final String accountId;
   final String chatGroupId;
 
-  AccountCard(this.accountId, {this.chatGroupId = ""});
+  const AccountCard(this.accountId, {super.key, this.chatGroupId = ""});
 
   @override
   State<AccountCard> createState() => _AccountCardState();
@@ -43,14 +43,16 @@ class _AccountCardState extends State<AccountCard> {
               account.displayName,
               overflow: TextOverflow.ellipsis,
             ),
-            onTap: () {
+            onTap: () async {
               if (widget.chatGroupId == "") {
                 Navigator.pushNamed(context, AccountView.routeName,
                     arguments: {"accountId": account.id});
               } else {
+                var chatId = await Client.getChatIdAccount(
+                    widget.chatGroupId, account.id);
                 Navigator.pushNamed(context, ChatView.routeName, arguments: {
                   "chatGroupId": widget.chatGroupId,
-                  "accountId": account.id
+                  "chatId": chatId
                 });
               }
             },

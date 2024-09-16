@@ -107,6 +107,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                           "Create",
                           (name) async {
                             await Client.createChatGroup(name);
+                            chatGroupIds = Client.getChatGroupIds();
                             setState(() {});
                           },
                         );
