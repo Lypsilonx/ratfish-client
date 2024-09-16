@@ -1,4 +1,4 @@
-import 'package:ratfish/src/elements/account_card.dart';
+import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
@@ -72,11 +72,34 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                                 accountId != Client.instance.self.id)
                             .map(
                           (accountId) {
-                            return Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 40),
-                              child: AccountCard(accountId,
-                                  chatGroupId: chatGroup.id),
+                            Future<String> characterId =
+                                Client.getCharacterId(chatGroup.id);
+                            return FutureBuilder(
+                              future: characterId,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasError) {
+                                  return ListTile(
+                                    leading: const Icon(Icons.error),
+                                    title: Text(
+                                        "Error loading character: ${chatGroup.id} (${snapshot.error})"),
+                                  );
+                                }
+
+                                if (snapshot.hasData) {
+                                  var characterId = snapshot.data!;
+                                  return Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 40),
+                                    child: CharacterCard(characterId,
+                                        chatGroupId: chatGroup.id),
+                                  );
+                                } else {
+                                  return const ListTile(
+                                    leading: CircularProgressIndicator(),
+                                    title: Text("Loading..."),
+                                  );
+                                }
+                              },
                             );
                           },
                         ),

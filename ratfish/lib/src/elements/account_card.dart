@@ -1,14 +1,12 @@
 import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/views/account_view.dart';
-import 'package:ratfish/src/views/chat_view.dart';
 import 'package:flutter/material.dart';
 
 class AccountCard extends StatefulWidget {
   final String accountId;
-  final String chatGroupId;
 
-  const AccountCard(this.accountId, {super.key, this.chatGroupId = ""});
+  const AccountCard(this.accountId, {super.key});
 
   @override
   State<AccountCard> createState() => _AccountCardState();
@@ -44,17 +42,8 @@ class _AccountCardState extends State<AccountCard> {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              if (widget.chatGroupId == "") {
-                Navigator.pushNamed(context, AccountView.routeName,
-                    arguments: {"accountId": account.id});
-              } else {
-                var chatId = await Client.getChatIdAccount(
-                    widget.chatGroupId, account.id);
-                Navigator.pushNamed(context, ChatView.routeName, arguments: {
-                  "chatGroupId": widget.chatGroupId,
-                  "chatId": chatId
-                });
-              }
+              Navigator.pushNamed(context, AccountView.routeName,
+                  arguments: {"accountId": account.id});
             },
           );
         } else {

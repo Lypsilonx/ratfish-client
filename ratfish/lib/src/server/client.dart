@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ratfish/src/server/account.dart';
+import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/chatGroup.dart';
 import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/server/response.dart';
@@ -22,7 +23,7 @@ class Client {
     try {
       var request =
           "http://politischdekoriert.de/ratfish-api/endpoint.php?data=${Uri.encodeComponent(jsonEncode(data))}";
-      // print("GET: $request");
+      print("GET: $request");
       var response = await http.read(Uri.parse(request));
       return Response.fromString(response);
     } catch (e) {
@@ -124,6 +125,21 @@ class Client {
     return Account.fromMap(response.body);
   }
 
+  static Future<Character> getCharacter(String characterId) async {
+    var response = await get(
+      {
+        "action": "getCharacter",
+        "characterId": characterId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return Character.empty;
+    }
+
+    return Character.fromMap(response.body);
+  }
+
   static Future<ChatGroup> getChatGroup(String chatGroupId) async {
     var response = await get(
       {
@@ -199,13 +215,13 @@ class Client {
     return response.body["chatId"];
   }
 
-  static getChatIdAccount(String chatGroupId, String accountId) async {
+  static getChatIdCharacter(String chatGroupId, String characterId) async {
     var response = await get(
       {
-        "action": "getChatIdAccount",
+        "action": "getChatIdCharacter",
         "userId": instance.self.id,
         "chatGroupId": chatGroupId,
-        "accountId": accountId,
+        "characterId": characterId,
       },
     );
 
@@ -244,6 +260,22 @@ class Client {
     }
 
     return response.body["accountIds"].cast<String>();
+  }
+
+  static Future<String> getCharacterId(String chatGroupId) async {
+    var response = await get(
+      {
+        "action": "getCharacterId",
+        "userId": instance.self.id,
+        "chatGroupId": chatGroupId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return "";
+    }
+
+    return response.body["characterId"];
   }
 
   // Setters

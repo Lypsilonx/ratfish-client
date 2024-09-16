@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:ratfish/src/elements/account_card.dart';
+import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/server/chatGroup.dart';
 import 'package:ratfish/src/server/client.dart';
@@ -16,9 +16,7 @@ class ChatView extends StatefulWidget {
   final String chatGroupId;
   final String chatId;
 
-  final types.User _sender = types.User(id: Client.instance.self.id);
-
-  ChatView(this.chatId, this.chatGroupId, {super.key});
+  ChatView(this.chatGroupId, this.chatId, {super.key});
 
   static const routeName = '/chat';
 
@@ -104,8 +102,11 @@ class _ChatViewState extends State<ChatView> {
     Future<List<String>> futureChatMemberIds =
         Client.getChatMembers(widget.chatId);
     Future<ChatGroup> futureChatGroup = Client.getChatGroup(widget.chatGroupId);
+    Future<String> futureCharacterId =
+        Client.getCharacterId(widget.chatGroupId);
     return FutureBuilder(
-      future: Future.wait([futureChatMemberIds, futureChatGroup]),
+      future: Future.wait(
+          [futureChatMemberIds, futureChatGroup, futureCharacterId]),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -120,6 +121,7 @@ class _ChatViewState extends State<ChatView> {
         if (snapshot.hasData) {
           ChatGroup chatGroup = snapshot.data![1] as ChatGroup;
           List<String> chatMemberIds = snapshot.data![0] as List<String>;
+          String characterId = snapshot.data![2] as String;
 
           bool isGroup = chatMemberIds.length != 2;
           String id = isGroup
@@ -129,7 +131,22 @@ class _ChatViewState extends State<ChatView> {
 
           return Scaffold(
             appBar: AppBar(
-              title: isGroup ? ChatGroupCard(id) : AccountCard(id),
+              title: isGroup
+                  ? FutureBuilder(
+                      future: futureCharacterId,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasError) {
+                          return const Text("Error loading character");
+                        }
+
+                        if (snapshot.hasData) {
+                          return CharacterCard(snapshot.data!);
+                        }
+
+                        return const CircularProgressIndicator();
+                      },
+                    )
+                  : ChatGroupCard(id),
               actions: [
                 SizedBox(
                   width: 55,
@@ -147,8 +164,9 @@ class _ChatViewState extends State<ChatView> {
                       ? const Center(child: Text("No messages"))
                       : const Center(child: CircularProgressIndicator()),
                   messages: messagesLoaded ? _messages : _messagesCache,
-                  onSendPressed: (message) => _handleSendPressed(message, id),
-                  user: widget._sender,
+                  onSendPressed: (message) =>
+                      _handleSendPressed(message, characterId, id),
+                  user: types.User(id: characterId),
                   theme: RatfishChatTheme.fromTheme(Theme.of(context)),
                   customMessageBuilder: (message, {required int messageWidth}) {
                     switch (message.type) {
@@ -184,14 +202,15 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void _addMessage(types.Message message, String recipientId) async {
+  void _addMessage(
+      types.Message message, String characterId, String recipientId) async {
     switch (message.type) {
       case types.MessageType.text:
         await Client.addMessage(
           Message(
             id: message.id,
             chatId: widget.chatId,
-            senderId: widget._sender.id,
+            senderId: characterId,
             content: (message as types.TextMessage).text,
             timestamp: "",
           ),
@@ -203,15 +222,16 @@ class _ChatViewState extends State<ChatView> {
     updateChat();
   }
 
-  void _handleSendPressed(types.PartialText message, String recipientId) {
+  void _handleSendPressed(
+      types.PartialText message, String characterId, String recipientId) {
     final textMessage = types.TextMessage(
-      author: widget._sender,
+      author: types.User(id: characterId),
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: randomString(),
       text: message.text,
     );
 
-    _addMessage(textMessage, recipientId);
+    _addMessage(textMessage, characterId, recipientId);
   }
 
   String randomString() {

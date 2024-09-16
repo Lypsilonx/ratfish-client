@@ -78,6 +78,9 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
                             context,
                             onOK: () {
                               Navigator.pop(context);
+
+                              Navigator.pushNamedAndRemoveUntil(
+                                  context, "/", (route) => false);
                             },
                           );
                         },
