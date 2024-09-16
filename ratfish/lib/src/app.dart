@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ratfish/src/views/character_view.dart';
 import 'package:ratfish/src/views/chat_view.dart';
 import 'package:ratfish/src/views/account_view.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
@@ -49,8 +50,10 @@ class Ratfish extends StatelessWidget {
                     ChatGroupView(map["chatGroupId"] as String),
                   AccountView.routeName =>
                     AccountView(map["accountId"] as String),
-                  ChatView.routeName => ChatView(
-                      map["chatGroupId"] as String, map["chatId"] as String),
+                  CharacterView.routeName =>
+                    CharacterView(map["characterId"] as String),
+                  ChatView.routeName => ChatView(map["chatGroupId"] as String,
+                      map["chatId"] as String, map["isGroup"] as bool),
                   _ => const ChatsGroupListView()
                 };
               },

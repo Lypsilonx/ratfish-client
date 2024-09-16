@@ -182,7 +182,7 @@ class Client {
       return [];
     }
 
-    return response.body["accountIds"].cast<String>();
+    return response.body["characterIds"].cast<String>();
   }
 
   static Future<List<String>> getChatMessages(String chatId) async {
@@ -262,11 +262,12 @@ class Client {
     return response.body["accountIds"].cast<String>();
   }
 
-  static Future<String> getCharacterId(String chatGroupId) async {
+  static Future<String> getCharacterId(
+      String chatGroupId, String accountId) async {
     var response = await get(
       {
         "action": "getCharacterId",
-        "userId": instance.self.id,
+        "userId": accountId,
         "chatGroupId": chatGroupId,
       },
     );

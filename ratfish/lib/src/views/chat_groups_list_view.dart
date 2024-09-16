@@ -19,16 +19,16 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
 
   void search(String search) async {
     try {
-      setState(() {
-        Util.executeWhenOK(
-          Client.joinChatGroup(search),
-          context,
-          onOK: () => {
-            searchController.clear(),
-            chatGroupIds = Client.getChatGroupIds(),
-          },
-        );
-      });
+      Util.executeWhenOK(
+        Client.joinChatGroup(search),
+        context,
+        onOK: () => {
+          setState(() {
+            searchController.clear();
+            chatGroupIds = Client.getChatGroupIds();
+          }),
+        },
+      );
     } catch (e) {
       Util.showErrorScaffold(context, "Chat not found");
     }
@@ -107,8 +107,9 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                           "Create",
                           (name) async {
                             await Client.createChatGroup(name);
-                            chatGroupIds = Client.getChatGroupIds();
-                            setState(() {});
+                            setState(() {
+                              chatGroupIds = Client.getChatGroupIds();
+                            });
                           },
                         );
                       },

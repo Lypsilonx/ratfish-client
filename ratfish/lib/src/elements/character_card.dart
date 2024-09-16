@@ -51,10 +51,15 @@ class _CharacterCardState extends State<CharacterCard> {
               } else {
                 var chatId = await Client.getChatIdCharacter(
                     widget.chatGroupId, character.id);
-                Navigator.pushNamed(context, ChatView.routeName, arguments: {
-                  "chatGroupId": widget.chatGroupId,
-                  "chatId": chatId
-                });
+                Navigator.pushNamed(
+                  context,
+                  ChatView.routeName,
+                  arguments: {
+                    "chatGroupId": widget.chatGroupId,
+                    "chatId": chatId,
+                    "isGroup": false,
+                  },
+                );
               }
             },
           );

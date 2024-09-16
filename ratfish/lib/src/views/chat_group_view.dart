@@ -73,7 +73,7 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                             .map(
                           (accountId) {
                             Future<String> characterId =
-                                Client.getCharacterId(chatGroup.id);
+                                Client.getCharacterId(chatGroup.id, accountId);
                             return FutureBuilder(
                               future: characterId,
                               builder: (context, snapshot) {

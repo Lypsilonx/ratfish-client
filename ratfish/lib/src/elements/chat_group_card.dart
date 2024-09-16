@@ -52,8 +52,15 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
                     arguments: {"chatGroupId": chatGroup.id});
               } else {
                 var chatId = await Client.getChatIdGroup(chatGroup.id);
-                Navigator.pushNamed(context, ChatView.routeName,
-                    arguments: {"chatGroupId": chatGroup.id, "chatId": chatId});
+                Navigator.pushNamed(
+                  context,
+                  ChatView.routeName,
+                  arguments: {
+                    "chatGroupId": chatGroup.id,
+                    "chatId": chatId,
+                    "isGroup": true,
+                  },
+                );
               }
             },
             onLongPress: () {

@@ -15,8 +15,9 @@ import 'package:ratfish/src/server/message.dart';
 class ChatView extends StatefulWidget {
   final String chatGroupId;
   final String chatId;
+  final bool isGroup;
 
-  ChatView(this.chatGroupId, this.chatId, {super.key});
+  const ChatView(this.chatGroupId, this.chatId, this.isGroup, {super.key});
 
   static const routeName = '/chat';
 
@@ -103,7 +104,7 @@ class _ChatViewState extends State<ChatView> {
         Client.getChatMembers(widget.chatId);
     Future<ChatGroup> futureChatGroup = Client.getChatGroup(widget.chatGroupId);
     Future<String> futureCharacterId =
-        Client.getCharacterId(widget.chatGroupId);
+        Client.getCharacterId(widget.chatGroupId, Client.instance.self.id);
     return FutureBuilder(
       future: Future.wait(
           [futureChatMemberIds, futureChatGroup, futureCharacterId]),
@@ -123,30 +124,17 @@ class _ChatViewState extends State<ChatView> {
           List<String> chatMemberIds = snapshot.data![0] as List<String>;
           String characterId = snapshot.data![2] as String;
 
-          bool isGroup = chatMemberIds.length != 2;
-          String id = isGroup
+          String id = widget.isGroup
               ? chatGroup.id
-              : chatMemberIds
-                  .firstWhere((element) => element != Client.instance.self.id);
+              : chatMemberIds.firstWhere((element) => element != characterId);
 
           return Scaffold(
             appBar: AppBar(
-              title: isGroup
-                  ? FutureBuilder(
-                      future: futureCharacterId,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasError) {
-                          return const Text("Error loading character");
-                        }
-
-                        if (snapshot.hasData) {
-                          return CharacterCard(snapshot.data!);
-                        }
-
-                        return const CircularProgressIndicator();
-                      },
-                    )
-                  : ChatGroupCard(id),
+              title: widget.isGroup
+                  ? ChatGroupCard(id)
+                  : CharacterCard(chatMemberIds.firstWhere(
+                      (element) => element != characterId,
+                    )),
               actions: [
                 SizedBox(
                   width: 55,
