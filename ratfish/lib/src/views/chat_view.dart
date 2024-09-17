@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart' as chat_ui;
 import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/views/edit_view.dart';
 
 class ChatView extends StatefulWidget {
   final String chatGroupId;
@@ -157,6 +158,19 @@ class _ChatViewState extends State<ChatView> {
                       _handleSendPressed(message, characterId, id),
                   user: types.User(id: characterId),
                   theme: RatfishChatTheme.fromTheme(Theme.of(context)),
+                  onMessageLongPress: (context, message) async {
+                    if (message.author.id ==
+                        await Client.getCharacterId(
+                            widget.chatGroupId, Client.instance.self.id)) {
+                      Navigator.of(context).pushNamed(
+                        EditView.routeName,
+                        arguments: {
+                          "type": (Message).toString(),
+                          "id": message.id,
+                        },
+                      );
+                    }
+                  },
                   customMessageBuilder: (message, {required int messageWidth}) {
                     switch (message.type) {
                       case types.MessageType.text:

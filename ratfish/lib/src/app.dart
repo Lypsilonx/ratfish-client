@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/views/chat_view.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:ratfish/src/views/chat_groups_list_view.dart';
@@ -54,6 +55,8 @@ class Ratfish extends StatelessWidget {
                     return EditView<Character>(map["id"] as String);
                   } else if (typeName == (ChatGroup).toString()) {
                     return EditView<ChatGroup>(map["id"] as String);
+                  } else if (typeName == (Message).toString()) {
+                    return EditView<Message>(map["id"] as String);
                   }
 
                   throw UnimplementedError();
