@@ -2,7 +2,7 @@ import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
-import 'package:ratfish/src/server/chatGroup.dart';
+import 'package:ratfish/src/server/chat_group.dart';
 import 'package:flutter/material.dart';
 
 class ChatGroupView extends StatefulWidget {
@@ -19,7 +19,8 @@ class ChatGroupView extends StatefulWidget {
 class _ChatGroupViewState extends State<ChatGroupView> {
   @override
   Widget build(BuildContext context) {
-    Future<ChatGroup> chatGroup = Client.getChatGroup(widget.chatGroupId);
+    Future<ChatGroup> chatGroup =
+        Client.getServerObject<ChatGroup>(widget.chatGroupId);
     return FutureBuilder<ChatGroup>(
       future: chatGroup,
       builder: (context, snapshot) {
@@ -67,10 +68,7 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                           padding: const EdgeInsets.only(left: 20, right: 40),
                           child: ChatGroupCard(chatGroup.id, openChat: true),
                         ),
-                        ...accountIds
-                            .where((accountId) =>
-                                accountId != Client.instance.self.id)
-                            .map(
+                        ...accountIds.map(
                           (accountId) {
                             Future<String> characterId =
                                 Client.getCharacterId(chatGroup.id, accountId);
@@ -91,7 +89,9 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                                     padding: const EdgeInsets.only(
                                         left: 20, right: 40),
                                     child: CharacterCard(characterId,
-                                        chatGroupId: chatGroup.id),
+                                        chatGroupId: chatGroup.id,
+                                        openEditView: accountId ==
+                                            Client.instance.self.id),
                                   );
                                 } else {
                                   return const ListTile(

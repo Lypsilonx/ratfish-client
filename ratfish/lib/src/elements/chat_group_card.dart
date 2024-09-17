@@ -1,4 +1,6 @@
-import 'package:ratfish/src/server/chatGroup.dart';
+import 'dart:convert';
+
+import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
@@ -18,7 +20,8 @@ class ChatGroupCard extends StatefulWidget {
 class _ChatGroupCardState extends State<ChatGroupCard> {
   @override
   Widget build(BuildContext context) {
-    Future<ChatGroup> chatGroup = Client.getChatGroup(widget.chatGroupId);
+    Future<ChatGroup> chatGroup =
+        Client.getServerObject<ChatGroup>(widget.chatGroupId);
     return FutureBuilder<ChatGroup>(
       future: chatGroup,
       builder: (context, snapshot) {
@@ -37,8 +40,8 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
             contentPadding: const EdgeInsets.all(20),
             leading: CircleAvatar(
               backgroundImage:
-                  (chatGroup.image != null && chatGroup.image != "")
-                      ? NetworkImage(chatGroup.image!)
+                  chatGroup.image.isNotEmpty && chatGroup.image != ""
+                      ? Image.memory(base64Decode(chatGroup.image)).image
                       : null,
             ),
             title: Text(

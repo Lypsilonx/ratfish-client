@@ -1,12 +1,13 @@
-class Message {
-  final String id;
+import 'package:ratfish/src/server/server_object.dart';
+
+class Message extends ServerObject {
   final String chatId;
   final String senderId;
-  final String content;
+  String content;
   final String timestamp;
 
   Message({
-    required this.id,
+    required super.id,
     required this.chatId,
     required this.senderId,
     required this.content,
@@ -39,5 +40,20 @@ class Message {
       'content': content,
       'timestamp': timestamp,
     };
+  }
+
+  @override
+  List<ChangeableField> getChangeableFields() {
+    return [
+      ChangeableField("Content", (value) => content = value, () => content,
+          FieldMode.LONG_STRING),
+    ];
+  }
+
+  @override
+  List<ViewableField> getVieweableFields() {
+    return [
+      ViewableField("Content", () => content, FieldMode.LONG_STRING),
+    ];
   }
 }

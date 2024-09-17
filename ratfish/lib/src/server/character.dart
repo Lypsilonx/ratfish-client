@@ -1,17 +1,18 @@
-class Character {
-  String id;
+import 'package:ratfish/src/server/server_object.dart';
+
+class Character extends ServerObject {
   String accountId;
   String chatGroupId;
   String name;
-  String avatar;
+  String image;
   String description;
 
   Character({
-    required this.id,
+    required super.id,
     required this.accountId,
     required this.chatGroupId,
     required this.name,
-    required this.avatar,
+    required this.image,
     required this.description,
   });
 
@@ -20,7 +21,7 @@ class Character {
     accountId: "",
     chatGroupId: "",
     name: "",
-    avatar: "",
+    image: "",
     description: "",
   );
 
@@ -30,7 +31,7 @@ class Character {
       accountId: map['accountId'],
       chatGroupId: map['chatGroupId'],
       name: map['name'],
-      avatar: map['avatar'] ?? "",
+      image: map['image'] ?? "",
       description: map['description'] ?? "",
     );
   }
@@ -41,8 +42,59 @@ class Character {
       'accountId': accountId,
       'chatGroupId': chatGroupId,
       'name': name,
-      'avatar': avatar,
+      'image': image,
       'description': description,
     };
+  }
+
+  @override
+  List<ChangeableField> getChangeableFields() {
+    return [
+      ChangeableField(
+        "Image",
+        (String value) {
+          image = value;
+        },
+        () => image,
+        FieldMode.IMAGE,
+      ),
+      ChangeableField(
+        "Name",
+        (String value) {
+          name = value;
+        },
+        () => name,
+        FieldMode.SHORT_STRING,
+      ),
+      ChangeableField(
+        "Description",
+        (String value) {
+          description = value;
+        },
+        () => description,
+        FieldMode.LONG_STRING,
+      ),
+    ];
+  }
+
+  @override
+  List<ViewableField> getVieweableFields() {
+    return [
+      ViewableField(
+        "Image",
+        () => image,
+        FieldMode.IMAGE,
+      ),
+      ViewableField(
+        "Name",
+        () => name,
+        FieldMode.SHORT_STRING,
+      ),
+      ViewableField(
+        "Description",
+        () => description,
+        FieldMode.LONG_STRING,
+      ),
+    ];
   }
 }

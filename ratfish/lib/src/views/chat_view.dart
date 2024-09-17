@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
-import 'package:ratfish/src/server/chatGroup.dart';
+import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 
@@ -78,7 +78,7 @@ class _ChatViewState extends State<ChatView> {
     var messageIds = await Client.getChatMessages(widget.chatId);
 
     for (var messageId in messageIds) {
-      var message = await Client.getMessage(messageId);
+      var message = await Client.getServerObject<Message>(messageId);
 
       _messages.add(
         types.TextMessage(
@@ -102,7 +102,8 @@ class _ChatViewState extends State<ChatView> {
   Widget build(BuildContext context) {
     Future<List<String>> futureChatMemberIds =
         Client.getChatMembers(widget.chatId);
-    Future<ChatGroup> futureChatGroup = Client.getChatGroup(widget.chatGroupId);
+    Future<ChatGroup> futureChatGroup =
+        Client.getServerObject<ChatGroup>(widget.chatGroupId);
     Future<String> futureCharacterId =
         Client.getCharacterId(widget.chatGroupId, Client.instance.self.id);
     return FutureBuilder(

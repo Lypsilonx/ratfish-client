@@ -1,10 +1,9 @@
 import 'dart:convert';
 
 import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chatGroup.dart';
 import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/server/response.dart';
+import 'package:ratfish/src/server/server_object.dart';
 import 'package:ratfish/src/settings/settings_controller.dart';
 
 import 'package:http/http.dart' as http;
@@ -32,7 +31,8 @@ class Client {
   }
 
   static Future<String> update() async {
-    var account = await getAccount(SettingsController.instance.userId);
+    var account =
+        await getServerObject<Account>(SettingsController.instance.userId);
     if (account.id == "") {
       return "Failed to update user data";
     }
@@ -110,64 +110,19 @@ class Client {
   }
 
   // Getters
-  static Future<Account> getAccount(String userId) async {
+  static Future<T> getServerObject<T extends ServerObject>(String id) async {
     var response = await get(
       {
-        "action": "getAccount",
-        "userId": userId,
+        "action": "get$T",
+        "id": id,
       },
     );
 
     if (response.statusCode != 200) {
-      return Account.empty;
+      return Future.error(response.body["message"]);
     }
 
-    return Account.fromMap(response.body);
-  }
-
-  static Future<Character> getCharacter(String characterId) async {
-    var response = await get(
-      {
-        "action": "getCharacter",
-        "characterId": characterId,
-      },
-    );
-
-    if (response.statusCode != 200) {
-      return Character.empty;
-    }
-
-    return Character.fromMap(response.body);
-  }
-
-  static Future<ChatGroup> getChatGroup(String chatGroupId) async {
-    var response = await get(
-      {
-        "action": "getChatGroup",
-        "chatGroupId": chatGroupId,
-      },
-    );
-
-    if (response.statusCode != 200) {
-      return ChatGroup.empty;
-    }
-
-    return ChatGroup.fromMap(response.body);
-  }
-
-  static Future<Message> getMessage(String messageId) async {
-    var response = await get(
-      {
-        "action": "getMessage",
-        "messageId": messageId,
-      },
-    );
-
-    if (response.statusCode != 200) {
-      return Message.empty;
-    }
-
-    return Message.fromMap(response.body);
+    return ServerObject.fromMap<T>(response.body);
   }
 
   static Future<List<String>> getChatMembers(String chatId) async {
@@ -280,6 +235,23 @@ class Client {
   }
 
   // Setters
+  static Future<String> setServerObject<T extends ServerObject>(
+      T serverObject, String id) async {
+    var response = await get(
+      {
+        "action": "set$T",
+        "id": id,
+        "data": jsonEncode(serverObject.toMap()),
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return response.body["message"];
+    }
+
+    return "OK";
+  }
+
   static Future<String> createChatGroup(String name) async {
     var response = await get(
       {

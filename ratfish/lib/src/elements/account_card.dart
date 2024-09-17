@@ -1,7 +1,9 @@
+import 'dart:convert';
+
 import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/client.dart';
-import 'package:ratfish/src/views/account_view.dart';
 import 'package:flutter/material.dart';
+import 'package:ratfish/src/views/inspect_view.dart';
 
 class AccountCard extends StatefulWidget {
   final String accountId;
@@ -15,7 +17,7 @@ class AccountCard extends StatefulWidget {
 class _AccountCardState extends State<AccountCard> {
   @override
   Widget build(BuildContext context) {
-    Future<Account> account = Client.getAccount(widget.accountId);
+    Future<Account> account = Client.getServerObject<Account>(widget.accountId);
     return FutureBuilder<Account>(
       future: account,
       builder: (context, snapshot) {
@@ -33,8 +35,9 @@ class _AccountCardState extends State<AccountCard> {
           return ListTile(
             contentPadding: const EdgeInsets.all(20),
             leading: CircleAvatar(
-              backgroundImage:
-                  account.avatar != "" ? NetworkImage(account.avatar) : null,
+              backgroundImage: account.image.isNotEmpty
+                  ? Image.memory(base64Decode(account.image)).image
+                  : null,
             ),
             title: Text(
               style: Theme.of(context).textTheme.titleMedium,
@@ -42,8 +45,8 @@ class _AccountCardState extends State<AccountCard> {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              Navigator.pushNamed(context, AccountView.routeName,
-                  arguments: {"accountId": account.id});
+              Navigator.pushNamed(context, InspectView.routeName,
+                  arguments: {"type": (Account).toString(), "id": account.id});
             },
           );
         } else {
