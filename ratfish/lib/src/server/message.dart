@@ -4,6 +4,7 @@ class Message extends ServerObject {
   final String chatId;
   final String senderId;
   String content;
+  String editTimestamp;
   final String timestamp;
 
   Message({
@@ -11,6 +12,7 @@ class Message extends ServerObject {
     required this.chatId,
     required this.senderId,
     required this.content,
+    required this.editTimestamp,
     required this.timestamp,
   });
 
@@ -19,6 +21,7 @@ class Message extends ServerObject {
     chatId: "",
     senderId: "",
     content: "",
+    editTimestamp: "",
     timestamp: "",
   );
 
@@ -28,6 +31,7 @@ class Message extends ServerObject {
       chatId: map['chatId'],
       senderId: map['senderId'],
       content: map['content'],
+      editTimestamp: map['editTimestamp'] ?? "",
       timestamp: map['timestamp'],
     );
   }
@@ -38,6 +42,7 @@ class Message extends ServerObject {
       'chatId': chatId,
       'senderId': senderId,
       'content': content,
+      'editTimestamp': editTimestamp,
       'timestamp': timestamp,
     };
   }
@@ -45,15 +50,10 @@ class Message extends ServerObject {
   @override
   List<ChangeableField> getChangeableFields() {
     return [
-      ChangeableField("Content", (value) => content = value, () => content,
-          FieldMode.LONG_STRING),
-    ];
-  }
-
-  @override
-  List<ViewableField> getVieweableFields() {
-    return [
-      ViewableField("Content", () => content, FieldMode.LONG_STRING),
+      ChangeableField("Content", (value) {
+        content = value;
+        editTimestamp = DateTime.now().microsecondsSinceEpoch.toString();
+      }, () => content, FieldType.LONG_STRING),
     ];
   }
 }

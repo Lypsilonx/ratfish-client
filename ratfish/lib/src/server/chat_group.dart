@@ -36,36 +36,20 @@ class ChatGroup extends ServerObject {
   List<ChangeableField> getChangeableFields() {
     return [
       ChangeableField(
-        "Name",
-        (String value) {
-          name = value;
-        },
-        () => name,
-        FieldMode.SHORT_STRING,
-      ),
-      ChangeableField(
         "Image",
         (String value) {
           image = value;
         },
         () => image,
-        FieldMode.IMAGE,
+        FieldType.IMAGE,
       ),
-    ];
-  }
-
-  @override
-  List<ViewableField> getVieweableFields() {
-    return [
-      ViewableField(
+      ChangeableField(
         "Name",
+        (String value) {
+          name = value;
+        },
         () => name,
-        FieldMode.SHORT_STRING,
-      ),
-      ViewableField(
-        "Image",
-        () => image,
-        FieldMode.IMAGE,
+        FieldType.SHORT_STRING,
       ),
     ];
   }

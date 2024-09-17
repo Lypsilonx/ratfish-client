@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
+import 'package:ratfish/src/views/edit_view.dart';
 import 'package:ratfish/src/views/inspect_view.dart';
 
 class AccountCard extends StatefulWidget {
@@ -45,7 +46,11 @@ class _AccountCardState extends State<AccountCard> {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              Navigator.pushNamed(context, InspectView.routeName,
+              Navigator.pushNamed(
+                  context,
+                  account.id == Client.instance.self.id
+                      ? EditView.routeName
+                      : InspectView.routeName,
                   arguments: {"type": (Account).toString(), "id": account.id});
             },
           );

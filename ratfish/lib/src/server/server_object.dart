@@ -9,7 +9,6 @@ abstract class ServerObject {
   ServerObject({required this.id});
 
   List<ChangeableField> getChangeableFields();
-  List<ViewableField> getVieweableFields();
 
   static T fromMap<T extends ServerObject>(Map<String, dynamic> map) {
     var typeName = T.toString();
@@ -33,24 +32,24 @@ class ChangeableField {
   final String name;
   final Function setter;
   final Function getter;
-  final FieldMode changeMode;
+  final FieldType type;
+  final AccessMode accessMode;
 
-  ChangeableField(this.name, this.setter, this.getter, this.changeMode);
+  ChangeableField(this.name, this.setter, this.getter, this.type,
+      {this.accessMode = AccessMode.READ_WRITE});
 }
 
-class ViewableField {
-  final String name;
-  final Function getter;
-  final FieldMode viewMode;
-
-  ViewableField(this.name, this.getter, this.viewMode);
-}
-
-enum FieldMode {
+enum FieldType {
   SHORT_STRING,
   LONG_STRING,
   IMAGE,
   INT,
   DOUBLE,
   BOOL,
+}
+
+enum AccessMode {
+  READ,
+  WRITE,
+  READ_WRITE,
 }

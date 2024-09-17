@@ -6,12 +6,14 @@ import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/views/chat_view.dart';
+import 'package:ratfish/src/views/edit_view.dart';
+import 'package:ratfish/src/views/inspect_view.dart';
 
 class ChatGroupCard extends StatefulWidget {
   final String chatGroupId;
-  final bool openChat;
+  final String goto;
 
-  const ChatGroupCard(this.chatGroupId, {this.openChat = false, super.key});
+  const ChatGroupCard(this.chatGroupId, {this.goto = "info", super.key});
 
   @override
   State<ChatGroupCard> createState() => _ChatGroupCardState();
@@ -50,20 +52,41 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              if (!widget.openChat) {
-                Navigator.pushNamed(context, ChatGroupView.routeName,
-                    arguments: {"chatGroupId": chatGroup.id});
-              } else {
-                var chatId = await Client.getChatIdGroup(chatGroup.id);
-                Navigator.pushNamed(
-                  context,
-                  ChatView.routeName,
-                  arguments: {
-                    "chatGroupId": chatGroup.id,
-                    "chatId": chatId,
-                    "isGroup": true,
-                  },
-                );
+              switch (widget.goto) {
+                case "info":
+                  Navigator.pushNamed(
+                    context,
+                    InspectView.routeName,
+                    arguments: {
+                      "id": chatGroup.id,
+                      "type": (ChatGroup).toString(),
+                    },
+                  );
+                case "edit":
+                  Navigator.pushNamed(
+                    context,
+                    EditView.routeName,
+                    arguments: {
+                      "id": chatGroup.id,
+                      "type": (ChatGroup).toString(),
+                    },
+                  );
+                case "open":
+                  Navigator.pushNamed(context, ChatGroupView.routeName,
+                      arguments: {"chatGroupId": chatGroup.id});
+                  break;
+                case "chat":
+                  var chatId = await Client.getChatIdGroup(chatGroup.id);
+                  Navigator.pushNamed(
+                    context,
+                    ChatView.routeName,
+                    arguments: {
+                      "chatGroupId": chatGroup.id,
+                      "chatId": chatId,
+                      "isGroup": true,
+                    },
+                  );
+                  break;
               }
             },
             onLongPress: () {

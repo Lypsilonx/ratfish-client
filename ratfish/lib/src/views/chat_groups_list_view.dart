@@ -94,7 +94,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                         (chatGroupId) {
                           return Padding(
                             padding: const EdgeInsets.only(left: 20, right: 40),
-                            child: ChatGroupCard(chatGroupId),
+                            child: ChatGroupCard(chatGroupId, goto: "open"),
                           );
                         },
                       ),

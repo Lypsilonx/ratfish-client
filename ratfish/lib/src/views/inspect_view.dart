@@ -49,20 +49,24 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...serverObject.getVieweableFields().map(
+                            ...serverObject
+                                .getChangeableFields()
+                                .where((field) =>
+                                    field.accessMode != AccessMode.WRITE)
+                                .map(
                               (field) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
-                                  child: switch (field.viewMode) {
-                                    FieldMode.SHORT_STRING => ListTile(
+                                  child: switch (field.type) {
+                                    FieldType.SHORT_STRING => ListTile(
                                         title: Text(field.getter()),
                                         subtitle: Text(field.name),
                                       ),
-                                    FieldMode.LONG_STRING => ListTile(
+                                    FieldType.LONG_STRING => ListTile(
                                         title: Text(field.getter()),
                                         subtitle: Text(field.name),
                                       ),
-                                    FieldMode.IMAGE => CircleAvatar(
+                                    FieldType.IMAGE => CircleAvatar(
                                         backgroundImage:
                                             field.getter().isNotEmpty
                                                 ? Image.memory(base64Decode(
@@ -70,15 +74,15 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
                                                     .image
                                                 : null,
                                       ),
-                                    FieldMode.INT => ListTile(
+                                    FieldType.INT => ListTile(
                                         title: Text(field.getter().toString()),
                                         subtitle: Text(field.name),
                                       ),
-                                    FieldMode.DOUBLE => ListTile(
+                                    FieldType.DOUBLE => ListTile(
                                         title: Text(field.getter().toString()),
                                         subtitle: Text(field.name),
                                       ),
-                                    FieldMode.BOOL => ListTile(
+                                    FieldType.BOOL => ListTile(
                                         title:
                                             Text(field.getter() ? "Yes" : "No"),
                                         subtitle: Text(field.name),

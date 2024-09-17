@@ -50,7 +50,7 @@ class Account extends ServerObject {
           image = value;
         },
         () => image,
-        FieldMode.IMAGE,
+        FieldType.IMAGE,
       ),
       ChangeableField(
         "User Name",
@@ -58,7 +58,8 @@ class Account extends ServerObject {
           userName = value;
         },
         () => userName,
-        FieldMode.SHORT_STRING,
+        FieldType.SHORT_STRING,
+        accessMode: AccessMode.WRITE,
       ),
       ChangeableField(
         "Display Name",
@@ -66,7 +67,7 @@ class Account extends ServerObject {
           displayName = value;
         },
         () => displayName,
-        FieldMode.SHORT_STRING,
+        FieldType.SHORT_STRING,
       ),
       ChangeableField(
         "Description",
@@ -74,28 +75,7 @@ class Account extends ServerObject {
           description = value;
         },
         () => description,
-        FieldMode.LONG_STRING,
-      ),
-    ];
-  }
-
-  @override
-  List<ViewableField> getVieweableFields() {
-    return [
-      ViewableField(
-        "Image",
-        () => image,
-        FieldMode.IMAGE,
-      ),
-      ViewableField(
-        "Display Name",
-        () => displayName,
-        FieldMode.SHORT_STRING,
-      ),
-      ViewableField(
-        "Description",
-        () => description,
-        FieldMode.LONG_STRING,
+        FieldType.LONG_STRING,
       ),
     ];
   }

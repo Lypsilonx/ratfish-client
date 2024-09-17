@@ -85,17 +85,21 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ...serverObject.getChangeableFields().map(
+                            ...serverObject
+                                .getChangeableFields()
+                                .where((field) =>
+                                    field.accessMode != AccessMode.READ)
+                                .map(
                               (field) {
                                 Uint8List image = Uint8List(0);
-                                if (field.changeMode == FieldMode.IMAGE) {
+                                if (field.type == FieldType.IMAGE) {
                                   image = base64Decode(field.getter());
                                 }
 
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
-                                  child: switch (field.changeMode) {
-                                    FieldMode.SHORT_STRING => TextFormField(
+                                  child: switch (field.type) {
+                                    FieldType.SHORT_STRING => TextFormField(
                                         initialValue: field.getter(),
                                         decoration: InputDecoration(
                                           labelText: field.name,
@@ -104,7 +108,7 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                           field.setter(value);
                                         },
                                       ),
-                                    FieldMode.LONG_STRING => TextFormField(
+                                    FieldType.LONG_STRING => TextFormField(
                                         initialValue: field.getter(),
                                         minLines: 3,
                                         maxLines: 10,
@@ -115,7 +119,7 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                           field.setter(value);
                                         },
                                       ),
-                                    FieldMode.IMAGE => Row(
+                                    FieldType.IMAGE => Row(
                                         children: [
                                           // Image from blob
                                           CircleAvatar(
@@ -146,7 +150,7 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                           ),
                                         ],
                                       ),
-                                    FieldMode.INT => TextFormField(
+                                    FieldType.INT => TextFormField(
                                         initialValue: field.getter().toString(),
                                         decoration: InputDecoration(
                                           labelText: field.name,
@@ -155,7 +159,7 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                           field.setter(int.parse(value));
                                         },
                                       ),
-                                    FieldMode.DOUBLE => TextFormField(
+                                    FieldType.DOUBLE => TextFormField(
                                         initialValue: field.getter().toString(),
                                         decoration: InputDecoration(
                                           labelText: field.name,
@@ -164,7 +168,7 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                           field.setter(double.parse(value));
                                         },
                                       ),
-                                    FieldMode.BOOL => Switch(
+                                    FieldType.BOOL => Switch(
                                         value: field.getter(),
                                         onChanged: (value) {
                                           field.setter(value);

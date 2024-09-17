@@ -56,7 +56,7 @@ class Character extends ServerObject {
           image = value;
         },
         () => image,
-        FieldMode.IMAGE,
+        FieldType.IMAGE,
       ),
       ChangeableField(
         "Name",
@@ -64,7 +64,7 @@ class Character extends ServerObject {
           name = value;
         },
         () => name,
-        FieldMode.SHORT_STRING,
+        FieldType.SHORT_STRING,
       ),
       ChangeableField(
         "Description",
@@ -72,28 +72,7 @@ class Character extends ServerObject {
           description = value;
         },
         () => description,
-        FieldMode.LONG_STRING,
-      ),
-    ];
-  }
-
-  @override
-  List<ViewableField> getVieweableFields() {
-    return [
-      ViewableField(
-        "Image",
-        () => image,
-        FieldMode.IMAGE,
-      ),
-      ViewableField(
-        "Name",
-        () => name,
-        FieldMode.SHORT_STRING,
-      ),
-      ViewableField(
-        "Description",
-        () => description,
-        FieldMode.LONG_STRING,
+        FieldType.LONG_STRING,
       ),
     ];
   }

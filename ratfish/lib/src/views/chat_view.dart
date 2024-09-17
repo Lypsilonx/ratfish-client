@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
+import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
@@ -80,12 +81,14 @@ class _ChatViewState extends State<ChatView> {
 
     for (var messageId in messageIds) {
       var message = await Client.getServerObject<Message>(messageId);
-
       _messages.add(
         types.TextMessage(
           id: messageId,
           author: types.User(id: message.senderId),
           createdAt: int.parse(message.timestamp),
+          updatedAt: message.editTimestamp != ""
+              ? int.parse(message.editTimestamp)
+              : null,
           text: message.content,
         ),
       );
@@ -133,7 +136,7 @@ class _ChatViewState extends State<ChatView> {
           return Scaffold(
             appBar: AppBar(
               title: widget.isGroup
-                  ? ChatGroupCard(id)
+                  ? ChatGroupCard(id, goto: "info")
                   : CharacterCard(chatMemberIds.firstWhere(
                       (element) => element != characterId,
                     )),
@@ -150,6 +153,31 @@ class _ChatViewState extends State<ChatView> {
             body: Stack(
               children: [
                 chat_ui.Chat(
+                  showUserAvatars: widget.isGroup,
+                  avatarBuilder: (user) {
+                    return FutureBuilder(
+                      future: Client.getServerObject<Character>(user.id),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          Character character = snapshot.data!;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 20),
+                            child: CircleAvatar(
+                              backgroundImage: character.image.isNotEmpty
+                                  ? Image.memory(base64Decode(character.image))
+                                      .image
+                                  : null,
+                            ),
+                          );
+                        } else {
+                          return const Padding(
+                            padding: EdgeInsets.only(right: 20),
+                            child: CircleAvatar(),
+                          );
+                        }
+                      },
+                    );
+                  },
                   emptyState: messagesLoaded
                       ? const Center(child: Text("No messages"))
                       : const Center(child: CircularProgressIndicator()),
@@ -171,12 +199,30 @@ class _ChatViewState extends State<ChatView> {
                       );
                     }
                   },
-                  customMessageBuilder: (message, {required int messageWidth}) {
+                  textMessageBuilder: (message,
+                      {required int messageWidth, required bool showName}) {
                     switch (message.type) {
                       case types.MessageType.text:
                         return Padding(
                           padding: const EdgeInsets.all(10),
-                          child: Text(message.metadata!["content"]),
+                          child: Column(children: [
+                            Text(message.text,
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 16,
+                                )),
+                            if (message.updatedAt != null)
+                              Text(
+                                "Edited",
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ]),
                         );
                       default:
                         return const Text("Unknown message type");
@@ -215,6 +261,7 @@ class _ChatViewState extends State<ChatView> {
             chatId: widget.chatId,
             senderId: characterId,
             content: (message as types.TextMessage).text,
+            editTimestamp: "",
             timestamp: "",
           ),
         );
