@@ -6,6 +6,7 @@ class Message extends ServerObject {
   final String senderId;
   String content;
   String editTimestamp;
+  String replyMessage;
   final String timestamp;
 
   Message({
@@ -14,6 +15,7 @@ class Message extends ServerObject {
     required this.senderId,
     required this.content,
     required this.editTimestamp,
+    required this.replyMessage,
     required this.timestamp,
   });
 
@@ -23,6 +25,7 @@ class Message extends ServerObject {
     senderId: "",
     content: "",
     editTimestamp: "",
+    replyMessage: "",
     timestamp: "",
   );
 
@@ -33,6 +36,7 @@ class Message extends ServerObject {
       senderId: map['senderId'],
       content: map['content'],
       editTimestamp: map['editTimestamp'] ?? "",
+      replyMessage: map['replyMessage'] ?? "",
       timestamp: map['timestamp'],
     );
   }
@@ -45,6 +49,7 @@ class Message extends ServerObject {
       'senderId': senderId,
       'content': content,
       'editTimestamp': editTimestamp,
+      'replyMessage': replyMessage,
       'timestamp': timestamp,
     };
   }

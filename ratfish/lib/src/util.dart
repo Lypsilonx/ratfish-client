@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import "package:pointycastle/export.dart";
 
 class Util {
@@ -94,7 +93,7 @@ class Util {
 
   static void askForString(BuildContext context, String title, String content,
       String confirmText, void Function(String string) confirmAction) {
-    InputTextFieldController controller = InputTextFieldController();
+    TextEditingController controller = TextEditingController();
 
     showDialog(
       context: context,

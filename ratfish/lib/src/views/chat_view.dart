@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
@@ -9,10 +8,10 @@ import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 
-import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
-import 'package:flutter_chat_ui/flutter_chat_ui.dart' as chat_ui;
+import 'package:chatview/chatview.dart' as chatview;
 import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/views/edit_view.dart';
+import 'package:ratfish/src/views/inspect_view.dart';
 
 class ChatView extends StatefulWidget {
   final String chatGroupId;
@@ -27,36 +26,18 @@ class ChatView extends StatefulWidget {
   State<ChatView> createState() => _ChatViewState();
 }
 
-class RatfishChatTheme {
-  static chat_ui.ChatTheme fromTheme(ThemeData theme) {
-    return chat_ui.DefaultChatTheme(
-      inputBackgroundColor: theme.colorScheme.primary,
-      backgroundColor: theme.colorScheme.surface,
-      primaryColor: theme.colorScheme.primary,
-      secondaryColor: theme.colorScheme.secondary,
-      inputTextColor: theme.colorScheme.onPrimary,
-      emptyChatPlaceholderTextStyle: TextStyle(
-        color: theme.colorScheme.onSurface,
-      ),
-      dateDividerTextStyle: TextStyle(
-        color: theme.colorScheme.onSurface,
-      ),
-    );
-  }
-}
-
 class _ChatViewState extends State<ChatView> {
   ScrollController scrollController = ScrollController();
-  final List<types.Message> _messages = [];
-  final List<types.Message> _messagesCache = [];
+  final List<chatview.Message> _messages = [];
   bool messagesLoaded = false;
   late Timer updateTimer;
+
+  chatview.ChatController? chatController;
 
   @override
   void initState() {
     super.initState();
 
-    updateChat();
     //call updateChat every 20 seconds
     updateTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
       updateChat();
@@ -70,35 +51,66 @@ class _ChatViewState extends State<ChatView> {
   }
 
   Future<void> updateChat() async {
-    setState(() {
-      _messagesCache.clear();
-      _messagesCache.addAll(_messages);
-      messagesLoaded = false;
-      _messages.clear();
-    });
+    var messages = await Client.getChatMessagesFull(widget.chatId);
 
-    var messageIds = await Client.getChatMessages(widget.chatId);
-
-    for (var messageId in messageIds) {
-      var message = await Client.getServerObject<Message>(messageId);
+    for (var message in messages) {
+      if (_messages.any((element) => element.id == message.id)) {
+        continue;
+      }
       _messages.add(
-        types.TextMessage(
-          id: messageId,
-          author: types.User(id: message.senderId),
-          createdAt: int.parse(message.timestamp),
-          updatedAt: message.editTimestamp != ""
-              ? int.parse(message.editTimestamp)
-              : null,
-          text: message.content,
-        ),
+        await buildMessage(message),
       );
+      if (chatController != null) {
+        chatController!.addMessage(
+          await buildMessage(message),
+        );
+      }
     }
 
     // sort messages by date
-    _messages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+    _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     setState(() {
       messagesLoaded = true;
+    });
+  }
+
+  Future<chatview.Message> buildMessage(Message message) async {
+    return chatview.Message(
+      id: message.id,
+      sentBy: message.senderId,
+      createdAt:
+          DateTime.fromMillisecondsSinceEpoch(int.parse(message.timestamp)),
+      // updatedAt: message.editTimestamp != ""
+      //     ? int.parse(message.editTimestamp)
+      //     : null,
+      status: chatview.MessageStatus.delivered,
+      replyMessage:
+          chatview.ReplyMessage.fromJson(jsonDecode(message.replyMessage)),
+      message: message.content,
+    );
+  }
+
+  Future<chatview.ChatUser> buildUser(String characterId) async {
+    var character = await Client.getServerObject<Character>(characterId);
+    return chatview.ChatUser(
+      id: character.id,
+      name: character.name,
+      profilePhoto: character.image,
+      imageType: chatview.ImageType.base64,
+    );
+  }
+
+  Future<void> updateChatController(
+      String characterId, List<chatview.ChatUser> users) async {
+    await updateChat().then((value) {
+      chatController = chatview.ChatController(
+        initialMessageList: List.from(_messages),
+        scrollController: ScrollController(),
+        currentUser: users.firstWhere((element) => element.id == characterId),
+        otherUsers:
+            users.where((element) => element.id != characterId).toList(),
+      );
     });
   }
 
@@ -110,9 +122,32 @@ class _ChatViewState extends State<ChatView> {
         Client.getServerObject<ChatGroup>(widget.chatGroupId);
     Future<String> futureCharacterId =
         Client.getCharacterId(widget.chatGroupId, Client.instance.self.id);
+    Future<List<chatview.ChatUser>> futureUsers = futureChatMemberIds.then(
+      (chatMemberIds) async {
+        return Future.wait(chatMemberIds.map((e) => buildUser(e)).toList());
+      },
+    );
+    var chatControllerReady = Completer();
+    // create never completing future
+    if (chatController == null) {
+      Future.wait([futureUsers, futureCharacterId]).then((values) {
+        List<chatview.ChatUser> users = values[0] as List<chatview.ChatUser>;
+        String characterId = values[1] as String;
+
+        updateChatController(characterId, users).then((value) {
+          chatControllerReady.complete();
+        });
+      });
+    }
+
     return FutureBuilder(
-      future: Future.wait(
-          [futureChatMemberIds, futureChatGroup, futureCharacterId]),
+      future: Future.wait([
+        futureChatMemberIds,
+        futureChatGroup,
+        futureCharacterId,
+        futureUsers,
+        chatControllerReady.future,
+      ]),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
@@ -125,8 +160,8 @@ class _ChatViewState extends State<ChatView> {
         }
 
         if (snapshot.hasData) {
-          ChatGroup chatGroup = snapshot.data![1] as ChatGroup;
           List<String> chatMemberIds = snapshot.data![0] as List<String>;
+          ChatGroup chatGroup = snapshot.data![1] as ChatGroup;
           String characterId = snapshot.data![2] as String;
 
           String id = widget.isGroup
@@ -134,116 +169,281 @@ class _ChatViewState extends State<ChatView> {
               : chatMemberIds.firstWhere((element) => element != characterId);
 
           return Scaffold(
-            appBar: AppBar(
-              title: widget.isGroup
-                  ? ChatGroupCard(id, goto: "info")
-                  : CharacterCard(chatMemberIds.firstWhere(
-                      (element) => element != characterId,
-                    )),
-              actions: [
-                SizedBox(
-                  width: 55,
-                  child: IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: updateChat,
+            body: chatview.ChatView(
+              chatController: chatController!,
+              onSendTap: (message, replyMessage, messageType) {
+                _onSendTap(
+                  message,
+                  replyMessage,
+                  messageType,
+                  characterId,
+                );
+              },
+              profileCircleConfig: chatview.ProfileCircleConfiguration(
+                onAvatarTap: (user) {
+                  Navigator.of(context).pushNamed(
+                    InspectView.routeName,
+                    arguments: {
+                      "type": (Character).toString(),
+                      "id": user.id,
+                    },
+                  );
+                },
+              ),
+              featureActiveConfig: const chatview.FeatureActiveConfig(
+                lastSeenAgoBuilderVisibility: true,
+                receiptsBuilderVisibility: true,
+                enableScrollToBottomButton: true,
+              ),
+              scrollToBottomButtonConfig: chatview.ScrollToBottomButtonConfig(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.transparent
+                      : Colors.grey,
+                ),
+                icon: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Theme.of(context).colorScheme.secondary,
+                  weight: 10,
+                  size: 30,
+                ),
+              ),
+              chatViewState: chatview.ChatViewState.hasMessages,
+              chatViewStateConfig: chatview.ChatViewStateConfiguration(
+                loadingWidgetConfig: chatview.ChatViewStateWidgetConfiguration(
+                  loadingIndicatorColor:
+                      Theme.of(context).colorScheme.secondary,
+                ),
+                onReloadButtonTap: () {},
+              ),
+              appBar: AppBar(
+                title: widget.isGroup
+                    ? ChatGroupCard(id, goto: "info")
+                    : CharacterCard(chatMemberIds.firstWhere(
+                        (element) => element != characterId,
+                      )),
+                actions: [
+                  SizedBox(
+                    width: 55,
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: updateChat,
+                    ),
+                  ),
+                ],
+              ),
+              chatBackgroundConfig: chatview.ChatBackgroundConfiguration(
+                messageTimeIconColor: Theme.of(context).colorScheme.secondary,
+                messageTimeTextStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.secondary),
+                defaultGroupSeparatorConfig:
+                    chatview.DefaultGroupSeparatorConfiguration(
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 17,
                   ),
                 ),
-              ],
-            ),
-            body: Stack(
-              children: [
-                chat_ui.Chat(
-                  showUserAvatars: widget.isGroup,
-                  avatarBuilder: (user) {
-                    return FutureBuilder(
-                      future: Client.getServerObject<Character>(user.id),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          Character character = snapshot.data!;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 20),
-                            child: CircleAvatar(
-                              backgroundImage: character.image.isNotEmpty
-                                  ? Image.memory(base64Decode(character.image))
-                                      .image
-                                  : null,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+              ),
+              sendMessageConfig: chatview.SendMessageConfiguration(
+                imagePickerIconsConfig: chatview.ImagePickerIconsConfiguration(
+                  cameraIconColor: Theme.of(context).colorScheme.onPrimary,
+                  galleryIconColor: Theme.of(context).colorScheme.onPrimary,
+                ),
+                replyMessageColor: Theme.of(context).colorScheme.onPrimary,
+                defaultSendButtonColor: Theme.of(context).colorScheme.onPrimary,
+                replyDialogColor: Theme.of(context).colorScheme.tertiary,
+                replyTitleColor: Theme.of(context).colorScheme.onTertiary,
+                textFieldBackgroundColor: Theme.of(context).colorScheme.primary,
+                closeIconColor: Theme.of(context).colorScheme.onTertiary,
+                textFieldConfig: chatview.TextFieldConfiguration(
+                  onMessageTyping: (status) {
+                    /// Do with status
+                    debugPrint(status.toString());
+                  },
+                  compositionThresholdTime: const Duration(seconds: 1),
+                  textStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                ),
+                micIconColor: Theme.of(context).colorScheme.onPrimary,
+                voiceRecordingConfiguration:
+                    chatview.VoiceRecordingConfiguration(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  recorderIconColor: Theme.of(context).colorScheme.onPrimary,
+                  waveStyle: chatview.WaveStyle(
+                    showMiddleLine: false,
+                    waveColor: Theme.of(context).colorScheme.onPrimary,
+                    extendWaveform: true,
+                  ),
+                ),
+              ),
+              chatBubbleConfig: chatview.ChatBubbleConfiguration(
+                outgoingChatBubbleConfig: chatview.ChatBubble(
+                  linkPreviewConfig: chatview.LinkPreviewConfiguration(
+                    linkStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      decoration: TextDecoration.underline,
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    bodyStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                    titleStyle:
+                        Theme.of(context).textTheme.titleSmall!.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
-                          );
-                        } else {
-                          return const Padding(
-                            padding: EdgeInsets.only(right: 20),
-                            child: CircleAvatar(),
-                          );
-                        }
-                      },
-                    );
-                  },
-                  emptyState: messagesLoaded
-                      ? const Center(child: Text("No messages"))
-                      : const Center(child: CircularProgressIndicator()),
-                  messages: messagesLoaded ? _messages : _messagesCache,
-                  onSendPressed: (message) =>
-                      _handleSendPressed(message, characterId, id),
-                  user: types.User(id: characterId),
-                  theme: RatfishChatTheme.fromTheme(Theme.of(context)),
-                  onMessageLongPress: (context, message) async {
-                    if (message.author.id ==
-                        await Client.getCharacterId(
-                            widget.chatGroupId, Client.instance.self.id)) {
-                      Navigator.of(context).pushNamed(
-                        EditView.routeName,
-                        arguments: {
-                          "type": (Message).toString(),
-                          "id": message.id,
-                        },
-                      );
-                    }
-                  },
-                  textMessageBuilder: (message,
-                      {required int messageWidth, required bool showName}) {
-                    switch (message.type) {
-                      case types.MessageType.text:
-                        return Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(children: [
-                            Text(message.text,
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                  fontSize: 16,
-                                )),
-                            if (message.updatedAt != null)
-                              Text(
-                                "Edited",
-                                style: TextStyle(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                  fontSize: 12,
-                                ),
-                              ),
-                          ]),
-                        );
-                      default:
-                        return const Text("Unknown message type");
-                    }
-                  },
+                  ),
+                  textStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  senderNameTextStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  receiptsWidgetConfig: const chatview.ReceiptsWidgetConfig(
+                      showReceiptsIn: chatview.ShowReceiptsIn.all),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                SizedBox(
-                  height: 2,
-                  width: 430,
-                  child: messagesLoaded
-                      ? null
-                      : const Center(child: LinearProgressIndicator()),
+                inComingChatBubbleConfig: chatview.ChatBubble(
+                  linkPreviewConfig: chatview.LinkPreviewConfiguration(
+                    linkStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          decoration: TextDecoration.underline,
+                        ),
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
+                    bodyStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                    titleStyle:
+                        Theme.of(context).textTheme.titleSmall!.copyWith(
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                  ),
+                  textStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  senderNameTextStyle:
+                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
-              ],
+              ),
+              replyPopupConfig: chatview.ReplyPopupConfiguration(
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                buttonTextStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                topBorderColor: Theme.of(context).colorScheme.primary,
+                onUnsendTap: (message) {
+                  Client.deleteMessage(characterId, message.id).then((value) {
+                    _messages
+                        .removeWhere((element) => element.id == message.id);
+                    chatController = null;
+                    setState(() {});
+                  });
+                },
+                onMoreTap: (message, value) {
+                  Navigator.of(context).pushNamed(
+                    EditView.routeName,
+                    arguments: {
+                      "type": (Message).toString(),
+                      "id": message.id,
+                    },
+                  );
+                },
+              ),
+              reactionPopupConfig: chatview.ReactionPopupConfiguration(
+                shadow: BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow,
+                  blurRadius: 20,
+                ),
+                backgroundColor: Theme.of(context).colorScheme.surface,
+              ),
+              messageConfig: chatview.MessageConfiguration(
+                messageReactionConfig: chatview.MessageReactionConfiguration(
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
+                  borderColor: Theme.of(context).colorScheme.tertiary,
+                  reactedUserCountTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onTertiary),
+                  reactionCountTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onTertiary),
+                  reactionsBottomSheetConfig:
+                      chatview.ReactionsBottomSheetConfiguration(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    reactedUserTextStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                    reactionWidgetDecoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                imageMessageConfig: chatview.ImageMessageConfiguration(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+                  shareIconConfig: chatview.ShareIconConfiguration(
+                    defaultIconBackgroundColor:
+                        Theme.of(context).colorScheme.primary,
+                    defaultIconColor: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
+              ),
+              // profileCircleConfig:
+              //     const chatview.ProfileCircleConfiguration(
+              //   profileImageUrl: Data.profileImage,
+              // ),
+              repliedMessageConfig: chatview.RepliedMessageConfiguration(
+                backgroundColor: Theme.of(context).colorScheme.tertiary,
+                verticalBarColor: Theme.of(context).colorScheme.onSurface,
+                repliedMsgAutoScrollConfig: chatview.RepliedMsgAutoScrollConfig(
+                  enableHighlightRepliedMsg: true,
+                  highlightColor: Theme.of(context).colorScheme.onSurface,
+                  highlightScale: 1.1,
+                ),
+                textStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.onTertiary,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.25,
+                ),
+                replyTitleTextStyle:
+                    TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
+              swipeToReplyConfig: chatview.SwipeToReplyConfiguration(
+                replyIconColor: Theme.of(context).colorScheme.onTertiary,
+                replyIconProgressRingColor:
+                    Theme.of(context).colorScheme.tertiary,
+                replyIconBackgroundColor:
+                    Theme.of(context).colorScheme.tertiary,
+              ),
+              replySuggestionsConfig: chatview.ReplySuggestionsConfig(
+                itemConfig: chatview.SuggestionItemConfig(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                onTap: (item) => _onSendTap(
+                  item.text,
+                  const chatview.ReplyMessage(),
+                  chatview.MessageType.text,
+                  characterId,
+                ),
+              ),
             ),
           );
         } else {
-          return Scaffold(
-            body: ListTile(
-              leading: const CircularProgressIndicator(),
-              title: Text("Loading... (${widget.chatId})"),
+          return const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 20),
+                  Text("Loading..."),
+                ],
+              ),
             ),
           );
         }
@@ -251,42 +451,24 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void _addMessage(
-      types.Message message, String characterId, String recipientId) async {
-    switch (message.type) {
-      case types.MessageType.text:
-        await Client.addMessage(
-          Message(
-            id: message.id,
-            chatId: widget.chatId,
-            senderId: characterId,
-            content: (message as types.TextMessage).text,
-            editTimestamp: "",
-            timestamp: "",
-          ),
-        );
-        break;
-      default:
-        break;
-    }
-    updateChat();
-  }
-
-  void _handleSendPressed(
-      types.PartialText message, String characterId, String recipientId) {
-    final textMessage = types.TextMessage(
-      author: types.User(id: characterId),
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: randomString(),
-      text: message.text,
+  void _onSendTap(
+    String message,
+    chatview.ReplyMessage replyMessage,
+    chatview.MessageType messageType,
+    String characterId,
+  ) async {
+    var messageObject = Message(
+      id: "",
+      chatId: widget.chatId,
+      senderId: characterId,
+      content: message,
+      editTimestamp: "",
+      replyMessage: jsonEncode(replyMessage),
+      timestamp: "",
     );
-
-    _addMessage(textMessage, characterId, recipientId);
-  }
-
-  String randomString() {
-    final random = Random.secure();
-    final values = List<int>.generate(16, (i) => random.nextInt(255));
-    return base64UrlEncode(values);
+    await Client.addMessage(
+      messageObject,
+    );
+    updateChat();
   }
 }

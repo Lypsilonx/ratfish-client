@@ -142,10 +142,7 @@ class Client {
 
   static Future<List<String>> getChatMessages(String chatId) async {
     var response = await get(
-      {
-        "action": "getChatMessages",
-        "chatId": chatId,
-      },
+      {"action": "getChatMessages", "chatId": chatId},
     );
 
     if (response.statusCode != 200) {
@@ -153,6 +150,20 @@ class Client {
     }
 
     return response.body["messageIds"].cast<String>();
+  }
+
+  static Future<List<Message>> getChatMessagesFull(String chatId) async {
+    var response = await get(
+      {"action": "getChatMessagesFull", "chatId": chatId},
+    );
+
+    if (response.statusCode != 200) {
+      return [];
+    }
+
+    return response.body["messages"].map<Message>((e) {
+      return Message.fromMap(e);
+    }).toList() as List<Message>;
   }
 
   static getChatIdGroup(String chatGroupId) async {
@@ -333,6 +344,25 @@ class Client {
         "userId": instance.self.id,
         "accessToken": SettingsController.instance.accessToken,
         "message": jsonEncode(message.toMap()),
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return response.body["message"];
+    }
+
+    return "OK";
+  }
+
+  static Future<String> deleteMessage(
+      String characterId, String messageId) async {
+    var response = await get(
+      {
+        "action": "deleteMessage",
+        "userId": instance.self.id,
+        "accessToken": SettingsController.instance.accessToken,
+        "characterId": characterId,
+        "messageId": messageId,
       },
     );
 
