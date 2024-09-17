@@ -1,3 +1,4 @@
+import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/server_object.dart';
 
 class Account extends ServerObject {

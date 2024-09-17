@@ -1,4 +1,5 @@
 import 'package:ratfish/src/server/account.dart';
+import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/message.dart';
@@ -26,30 +27,4 @@ abstract class ServerObject {
   }
 
   Map<String, dynamic> toMap();
-}
-
-class ChangeableField {
-  final String name;
-  final Function setter;
-  final Function getter;
-  final FieldType type;
-  final AccessMode accessMode;
-
-  ChangeableField(this.name, this.setter, this.getter, this.type,
-      {this.accessMode = AccessMode.READ_WRITE});
-}
-
-enum FieldType {
-  SHORT_STRING,
-  LONG_STRING,
-  IMAGE,
-  INT,
-  DOUBLE,
-  BOOL,
-}
-
-enum AccessMode {
-  READ,
-  WRITE,
-  READ_WRITE,
 }

@@ -41,10 +41,7 @@ class _ChatGroupViewState extends State<ChatGroupView> {
 
           return Scaffold(
             appBar: AppBar(
-              title: Text(
-                chatGroup.name,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              title: ChatGroupCard(chatGroup.id, goto: "edit"),
             ),
             body: Padding(
               padding: const EdgeInsets.all(20),

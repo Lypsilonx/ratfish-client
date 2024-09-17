@@ -1,3 +1,4 @@
+import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/server_object.dart';
 
 class ChatGroup extends ServerObject {
@@ -24,6 +25,7 @@ class ChatGroup extends ServerObject {
     );
   }
 
+  @override
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -50,6 +52,13 @@ class ChatGroup extends ServerObject {
         },
         () => name,
         FieldType.SHORT_STRING,
+      ),
+      ChangeableField(
+        "ID",
+        (String value) {},
+        () => id,
+        FieldType.SHORT_STRING,
+        accessMode: AccessMode.READ,
       ),
     ];
   }

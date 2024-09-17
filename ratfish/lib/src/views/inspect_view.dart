@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/server/server_object.dart';
@@ -57,37 +56,7 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
                               (field) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
-                                  child: switch (field.type) {
-                                    FieldType.SHORT_STRING => ListTile(
-                                        title: Text(field.getter()),
-                                        subtitle: Text(field.name),
-                                      ),
-                                    FieldType.LONG_STRING => ListTile(
-                                        title: Text(field.getter()),
-                                        subtitle: Text(field.name),
-                                      ),
-                                    FieldType.IMAGE => CircleAvatar(
-                                        backgroundImage:
-                                            field.getter().isNotEmpty
-                                                ? Image.memory(base64Decode(
-                                                        field.getter()))
-                                                    .image
-                                                : null,
-                                      ),
-                                    FieldType.INT => ListTile(
-                                        title: Text(field.getter().toString()),
-                                        subtitle: Text(field.name),
-                                      ),
-                                    FieldType.DOUBLE => ListTile(
-                                        title: Text(field.getter().toString()),
-                                        subtitle: Text(field.name),
-                                      ),
-                                    FieldType.BOOL => ListTile(
-                                        title:
-                                            Text(field.getter() ? "Yes" : "No"),
-                                        subtitle: Text(field.name),
-                                      ),
-                                  },
+                                  child: field.renderReadonly(),
                                 );
                               },
                             ),

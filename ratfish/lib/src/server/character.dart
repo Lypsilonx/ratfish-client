@@ -1,3 +1,4 @@
+import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/server_object.dart';
 
 class Character extends ServerObject {
@@ -36,6 +37,7 @@ class Character extends ServerObject {
     );
   }
 
+  @override
   Map<String, dynamic> toMap() {
     return {
       'id': id,

@@ -241,6 +241,8 @@ class Client {
       {
         "action": "set$T",
         "id": id,
+        "userId": instance.self.id,
+        "accessToken": SettingsController.instance.accessToken,
         "data": jsonEncode(serverObject.toMap()),
       },
     );

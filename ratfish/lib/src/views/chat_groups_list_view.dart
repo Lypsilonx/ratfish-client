@@ -30,7 +30,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
         },
       );
     } catch (e) {
-      Util.showErrorScaffold(context, "Chat not found");
+      Util.showErrorScaffold(context, "ChatGroup not found");
     }
   }
 
@@ -57,8 +57,8 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     controller: searchController,
                     autocorrect: false,
                     decoration: const InputDecoration(
-                      labelText: 'Search',
-                      helperText: 'search for a chat group',
+                      labelText: 'Join Chat Group',
+                      helperText: 'enter the chat group id',
                     ),
                     onFieldSubmitted: (String value) async {
                       search(value);
