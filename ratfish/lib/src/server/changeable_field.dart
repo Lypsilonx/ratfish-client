@@ -29,105 +29,112 @@ class ChangeableField {
   ChangeableField(this.name, this.setter, this.getter, this.type,
       {this.accessMode = AccessMode.READ_WRITE});
 
-  Widget renderChangeable(Function setState) {
+  Widget renderChangeable(BuildContext context, Function onChange) {
     Uint8List image = Uint8List(0);
     if (type == FieldType.IMAGE) {
       image = base64Decode(getter());
     }
-    return switch (type) {
-      FieldType.SHORT_STRING => TextFormField(
-          initialValue: getter(),
-          decoration: InputDecoration(
-            labelText: name,
-          ),
-          onChanged: (value) {
-            setter(value);
-          },
-        ),
-      FieldType.LONG_STRING => TextFormField(
-          initialValue: getter(),
-          minLines: 3,
-          maxLines: 10,
-          decoration: InputDecoration(
-            labelText: name,
-          ),
-          onChanged: (value) {
-            setter(value);
-          },
-        ),
-      FieldType.IMAGE => Row(
-          children: [
-            // Image from blob
-            CircleAvatar(
-              backgroundImage:
-                  image.isNotEmpty ? Image.memory(image).image : null,
+    return Center(
+      child: switch (type) {
+        FieldType.SHORT_STRING => TextFormField(
+            initialValue: getter(),
+            decoration: InputDecoration(
+              labelText: name,
             ),
-            ElevatedButton(
-              onPressed: () async {
-                var imagePicker = ImagePicker();
-                var file =
-                    await imagePicker.pickImage(source: ImageSource.gallery);
-                if (file != null) {
-                  var imageData = await file.readAsBytes();
-                  imageData = compressAndResizeImage(imageData, size: 64);
-                  setState(() {
+            onChanged: (value) {
+              setter(value);
+              onChange();
+            },
+          ),
+        FieldType.LONG_STRING => TextFormField(
+            initialValue: getter(),
+            minLines: 3,
+            maxLines: 10,
+            decoration: InputDecoration(
+              labelText: name,
+            ),
+            onChanged: (value) {
+              setter(value);
+              onChange();
+            },
+          ),
+        FieldType.IMAGE => Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Image from blob
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Theme.of(context).colorScheme.tertiary,
+                backgroundImage:
+                    image.isNotEmpty ? Image.memory(image).image : null,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  var imagePicker = ImagePicker();
+                  var file =
+                      await imagePicker.pickImage(source: ImageSource.gallery);
+                  if (file != null) {
+                    var imageData = await file.readAsBytes();
+                    imageData = compressAndResizeImage(imageData, size: 64);
                     setter(base64Encode(imageData));
-                  });
-                }
-              },
-              child: const Text("Change Image"),
+                    onChange();
+                  }
+                },
+                child: const Text("Change Image"),
+              ),
+            ],
+          ),
+        FieldType.INT => TextFormField(
+            initialValue: getter().toString(),
+            decoration: InputDecoration(
+              labelText: name,
             ),
-          ],
-        ),
-      FieldType.INT => TextFormField(
-          initialValue: getter().toString(),
-          decoration: InputDecoration(
-            labelText: name,
+            onChanged: (value) {
+              setter(int.parse(value));
+              onChange();
+            },
           ),
-          onChanged: (value) {
-            setter(int.parse(value));
-          },
-        ),
-      FieldType.DOUBLE => TextFormField(
-          initialValue: getter().toString(),
-          decoration: InputDecoration(
-            labelText: name,
+        FieldType.DOUBLE => TextFormField(
+            initialValue: getter().toString(),
+            decoration: InputDecoration(
+              labelText: name,
+            ),
+            onChanged: (value) {
+              setter(double.parse(value));
+              onChange();
+            },
           ),
-          onChanged: (value) {
-            setter(double.parse(value));
-          },
-        ),
-      FieldType.BOOL => name == "Ready"
-          ? ElevatedButton(
-              onPressed: () {
-                setState(() {
+        FieldType.BOOL => name == "Ready"
+            ? ElevatedButton(
+                onPressed: () {
                   setter(!getter());
-                });
-              },
-              child: Text(getter() ? "Unready" : "Ready"),
-            )
-          : Column(
-              children: [
-                Text(name),
-                Switch(
-                  value: getter(),
-                  onChanged: (value) {
-                    setState(() {
+                  onChange();
+                },
+                child: Text(getter() ? "Unready" : "Ready"),
+              )
+            : Column(
+                children: [
+                  Text(name),
+                  Switch(
+                    value: getter(),
+                    onChanged: (value) {
                       setter(value);
-                    });
-                  },
-                ),
-              ],
-            ),
-    };
+                      onChange();
+                    },
+                  ),
+                ],
+              ),
+      },
+    );
   }
 
-  Widget renderReadonly() {
+  Widget renderReadonly(BuildContext context) {
     return switch (type) {
       FieldType.SHORT_STRING => name == "ID"
           ? ListTile(
-              title: Text(getter()),
-              subtitle: Text(name),
+              subtitle: Text(getter()),
+              title: Text(name),
               leading: IconButton(
                 icon: const Icon(Icons.copy),
                 onPressed: () {
@@ -136,12 +143,12 @@ class ChangeableField {
               ),
             )
           : ListTile(
-              title: Text(getter()),
-              subtitle: Text(name),
+              subtitle: Text(getter()),
+              title: Text(name),
             ),
       FieldType.LONG_STRING => ListTile(
-          title: Text(getter()),
-          subtitle: Text(name),
+          subtitle: Text(getter()),
+          title: Text(name),
         ),
       FieldType.IMAGE => CircleAvatar(
           backgroundImage: getter().isNotEmpty
@@ -149,16 +156,16 @@ class ChangeableField {
               : null,
         ),
       FieldType.INT => ListTile(
-          title: Text(getter().toString()),
-          subtitle: Text(name),
+          subtitle: Text(getter().toString()),
+          title: Text(name),
         ),
       FieldType.DOUBLE => ListTile(
-          title: Text(getter().toString()),
-          subtitle: Text(name),
+          subtitle: Text(getter().toString()),
+          title: Text(name),
         ),
       FieldType.BOOL => ListTile(
-          title: Text(getter() ? "Yes" : "No"),
-          subtitle: Text(name),
+          subtitle: Text(getter() ? "Yes" : "No"),
+          title: Text(name),
         ),
     };
   }

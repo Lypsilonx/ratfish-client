@@ -56,7 +56,7 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
                               (field) {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
-                                  child: field.renderReadonly(),
+                                  child: field.renderReadonly(context),
                                 );
                               },
                             ),

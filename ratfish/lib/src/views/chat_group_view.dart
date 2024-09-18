@@ -1,11 +1,9 @@
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
-import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:flutter/material.dart';
-import 'package:ratfish/src/views/edit_view.dart';
 
 class ChatGroupView extends StatefulWidget {
   final String chatGroupId;
@@ -43,6 +41,8 @@ class _ChatGroupViewState extends State<ChatGroupView> {
           var locked = snapshot.data![1] as bool;
           var chatGroupAccountIds = Client.getChatGroupAccountIds(chatGroup.id);
 
+          Future<int> readyAccounts = Client.getReadyCount(chatGroup.id);
+
           return Scaffold(
             appBar: AppBar(
               title: ChatGroupCard(chatGroup.id, goto: "edit"),
@@ -65,11 +65,7 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                     return ListView(
                       controller: ScrollController(),
                       children: [
-                        if (!locked)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 40),
-                            child: ChatGroupCard(chatGroup.id, goto: "chat"),
-                          ),
+                        if (!locked) ChatGroupCard(chatGroup.id, goto: "chat"),
                         ...accountIds
                             .where(
                           (accountId) =>
@@ -92,16 +88,12 @@ class _ChatGroupViewState extends State<ChatGroupView> {
 
                                 if (snapshot.hasData) {
                                   var characterId = snapshot.data!;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 40),
-                                    child: CharacterCard(
-                                      characterId,
-                                      chatGroupId: chatGroup.id,
-                                      openEditView:
-                                          accountId == Client.instance.self.id,
-                                      locked: locked,
-                                    ),
+                                  return CharacterCard(
+                                    characterId,
+                                    chatGroupId: chatGroup.id,
+                                    openEditView:
+                                        accountId == Client.instance.self.id,
+                                    locked: locked,
                                   );
                                 } else {
                                   return const ListTile(
@@ -114,23 +106,28 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                           },
                         ),
                         if (locked)
-                          ListTile(
-                            leading: const Icon(Icons.lock),
-                            title: const Text("This chat group is locked."),
-                            subtitle: Text("${accountIds.length} members"),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () async {
-                                Navigator.pushNamed(
-                                  context,
-                                  EditView.routeName,
-                                  arguments: {
-                                    "type": (Character).toString(),
-                                    "id": await Client.getCharacterId(
-                                        chatGroup.id, Client.instance.self.id),
-                                  },
-                                );
-                              },
+                          SizedBox(
+                            height: 400,
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.lock),
+                                  const Text("This chat group is locked."),
+                                  Text("${accountIds.length} members"),
+                                  FutureBuilder(
+                                    future: readyAccounts,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Text(
+                                            "(${snapshot.data!} ready)");
+                                      } else {
+                                        return const Text("Loading...");
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                       ],

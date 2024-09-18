@@ -243,6 +243,21 @@ class Client {
     return response.body["locked"];
   }
 
+  static Future<int> getReadyCount(String chatGroupId) async {
+    var response = await get(
+      {
+        "action": "getReadyCount",
+        "chatGroupId": chatGroupId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return 0;
+    }
+
+    return response.body["readyCount"];
+  }
+
   static Future<String> getCharacterId(
       String chatGroupId, String accountId) async {
     var response = await get(

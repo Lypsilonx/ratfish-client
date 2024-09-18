@@ -104,7 +104,8 @@ class _ChatViewState extends State<ChatView> {
     var character = await Client.getServerObject<Character>(characterId);
     return chatview.ChatUser(
       id: character.id,
-      name: character.name,
+      name: character.name +
+          (character.pronouns != "" ? " (${character.pronouns})" : ""),
       profilePhoto: character.image,
       imageType: chatview.ImageType.base64,
     );
@@ -300,7 +301,7 @@ class _ChatViewState extends State<ChatView> {
                   textStyle:
                       TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                   senderNameTextStyle:
-                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   receiptsWidgetConfig: const chatview.ReceiptsWidgetConfig(
                       showReceiptsIn: chatview.ShowReceiptsIn.all),
                   color: Theme.of(context).colorScheme.primary,
@@ -323,7 +324,7 @@ class _ChatViewState extends State<ChatView> {
                   textStyle:
                       TextStyle(color: Theme.of(context).colorScheme.onPrimary),
                   senderNameTextStyle:
-                      TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                      TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   color: Theme.of(context).colorScheme.secondary,
                 ),
               ),

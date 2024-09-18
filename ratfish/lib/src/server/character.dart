@@ -5,6 +5,7 @@ class Character extends ServerObject {
   String accountId;
   String chatGroupId;
   String name;
+  String pronouns;
   String image;
   String description;
   bool ready = false;
@@ -14,6 +15,7 @@ class Character extends ServerObject {
     required this.accountId,
     required this.chatGroupId,
     required this.name,
+    required this.pronouns,
     required this.image,
     required this.description,
     required this.ready,
@@ -24,6 +26,7 @@ class Character extends ServerObject {
     accountId: "",
     chatGroupId: "",
     name: "",
+    pronouns: "",
     image: "",
     description: "",
     ready: false,
@@ -35,6 +38,7 @@ class Character extends ServerObject {
         accountId: map['accountId'],
         chatGroupId: map['chatGroupId'],
         name: map['name'],
+        pronouns: map['pronouns'] ?? "",
         image: map['image'] ?? "",
         description: map['description'] ?? "",
         ready: map['ready'] == "1");
@@ -47,6 +51,7 @@ class Character extends ServerObject {
       'accountId': accountId,
       'chatGroupId': chatGroupId,
       'name': name,
+      'pronouns': pronouns,
       'image': image,
       'description': description,
       'ready': ready,
@@ -70,6 +75,14 @@ class Character extends ServerObject {
           name = value;
         },
         () => name,
+        FieldType.SHORT_STRING,
+      ),
+      ChangeableField(
+        "Pronouns",
+        (String value) {
+          pronouns = value;
+        },
+        () => pronouns,
         FieldType.SHORT_STRING,
       ),
       ChangeableField(

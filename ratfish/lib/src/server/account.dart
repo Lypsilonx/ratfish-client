@@ -4,6 +4,7 @@ import 'package:ratfish/src/server/server_object.dart';
 class Account extends ServerObject {
   String userName;
   String displayName;
+  String pronouns;
   String image;
   String description;
 
@@ -13,6 +14,7 @@ class Account extends ServerObject {
     required super.id,
     required this.userName,
     required this.displayName,
+    required this.pronouns,
     required this.image,
     required this.description,
     required this.publicKey,
@@ -24,6 +26,7 @@ class Account extends ServerObject {
       id: map['id'],
       userName: map['userName'],
       displayName: map['displayName'],
+      pronouns: map['pronouns'] ?? "",
       image: map['image'] ?? "",
       description: map['description'] ?? "",
       publicKey: map['publicKey'] ?? "",
@@ -36,6 +39,7 @@ class Account extends ServerObject {
       'id': id,
       'userName': userName,
       'displayName': displayName,
+      'pronouns': pronouns,
       'image': image,
       'description': description,
       'publicKey': publicKey,
@@ -68,6 +72,14 @@ class Account extends ServerObject {
           displayName = value;
         },
         () => displayName,
+        FieldType.SHORT_STRING,
+      ),
+      ChangeableField(
+        "Pronouns",
+        (String value) {
+          pronouns = value;
+        },
+        () => pronouns,
         FieldType.SHORT_STRING,
       ),
       ChangeableField(

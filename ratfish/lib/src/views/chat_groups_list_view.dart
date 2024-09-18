@@ -40,7 +40,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
       bottomNavigationBar: NavBar(ChatsGroupListView.routeName),
       appBar: AppBar(
         title: Text(
-          'Chats',
+          'Chat Groups',
           style: Theme.of(context).textTheme.titleLarge,
         ),
       ),
@@ -58,7 +58,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     autocorrect: false,
                     decoration: const InputDecoration(
                       labelText: 'Join Chat Group',
-                      helperText: 'enter the chat group id',
+                      helperText: 'enter a chat group id',
                     ),
                     onFieldSubmitted: (String value) async {
                       search(value);
@@ -92,18 +92,17 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     if (snapshot.data!.isNotEmpty)
                       ...snapshot.data!.map(
                         (chatGroupId) {
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 40),
-                            child: ChatGroupCard(chatGroupId, goto: "open"),
-                          );
+                          return ChatGroupCard(chatGroupId, goto: "open");
                         },
                       ),
-                    ElevatedButton(
-                      onPressed: () {
+                    ListTile(
+                      leading: const Icon(Icons.add),
+                      title: const Text('Create Chat Group'),
+                      onTap: () {
                         Util.askForString(
                           context,
                           "Create Chat Group",
-                          "Enter the name of the chat group",
+                          "Enter a name for the chat group",
                           "Create",
                           (name) async {
                             await Client.createChatGroup(name);
@@ -113,7 +112,6 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                           },
                         );
                       },
-                      child: const Text('Create Chat Group'),
                     ),
                   ],
                 );

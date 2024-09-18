@@ -17,6 +17,7 @@ class EditView<T extends ServerObject> extends StatefulWidget {
 class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
   ScrollController scrollController = ScrollController();
   T? cachedServerObject;
+  bool dirty = false;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,15 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
         return Scaffold(
           appBar: AppBar(
             title: Text("Edit ${T.toString()}"),
+            leading: dirty
+                ? IconButton(
+                    icon: const Icon(Icons.save),
+                    onPressed: () {
+                      Client.setServerObject<T>(cachedServerObject!, widget.id);
+                      Navigator.pop(context);
+                    },
+                  )
+                : null,
           ),
           body: FutureBuilder<T>(
             future: futureServerObject,
@@ -62,18 +72,17 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
                                   child: field.accessMode == AccessMode.READ
-                                      ? field.renderReadonly()
-                                      : field.renderChangeable(setState),
+                                      ? field.renderReadonly(context)
+                                      : field.renderChangeable(
+                                          context,
+                                          () {
+                                            setState(() {
+                                              dirty = true;
+                                            });
+                                          },
+                                        ),
                                 );
                               },
-                            ),
-                            ElevatedButton(
-                              onPressed: () async {
-                                await Client.setServerObject<T>(
-                                    serverObject, widget.id);
-                                Navigator.pop(context);
-                              },
-                              child: const Text("Save"),
                             ),
                           ],
                         ),
