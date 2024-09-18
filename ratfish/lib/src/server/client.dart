@@ -22,7 +22,7 @@ class Client {
     try {
       var request =
           "http://politischdekoriert.de/ratfish-api/endpoint.php?data=${Uri.encodeComponent(jsonEncode(data))}";
-      // print("GET: $request");
+      print("GET: $request");
       var response = await http.read(Uri.parse(request));
       return Response.fromString(response);
     } catch (e) {
@@ -226,6 +226,21 @@ class Client {
     }
 
     return response.body["accountIds"].cast<String>();
+  }
+
+  static Future<bool> getChatGroupLocked(String chatGroupId) async {
+    var response = await get(
+      {
+        "action": "getChatGroupLocked",
+        "chatGroupId": chatGroupId,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return false;
+    }
+
+    return response.body["locked"];
   }
 
   static Future<String> getCharacterId(

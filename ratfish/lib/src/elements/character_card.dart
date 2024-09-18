@@ -11,9 +11,13 @@ class CharacterCard extends StatefulWidget {
   final String characterId;
   final String chatGroupId;
   final bool openEditView;
+  final bool locked;
 
   const CharacterCard(this.characterId,
-      {super.key, this.chatGroupId = "", this.openEditView = false});
+      {super.key,
+      this.chatGroupId = "",
+      this.openEditView = false,
+      this.locked = false});
 
   @override
   State<CharacterCard> createState() => _CharacterCardState();
@@ -47,11 +51,17 @@ class _CharacterCardState extends State<CharacterCard> {
             ),
             title: Text(
               style: Theme.of(context).textTheme.titleMedium,
-              widget.openEditView ? "You: ${character.name}" : character.name,
+              widget.openEditView
+                  ? widget.locked
+                      ? character.ready
+                          ? "Edit: ${character.name}"
+                          : "Create Character"
+                      : "You: ${character.name}"
+                  : character.name,
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              if (widget.chatGroupId == "") {
+              if (widget.chatGroupId == "" || !widget.locked) {
                 Navigator.pushNamed(context, InspectView.routeName, arguments: {
                   "type": (Character).toString(),
                   "id": character.id

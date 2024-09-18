@@ -48,7 +48,7 @@ class _ChatGroupCardState extends State<ChatGroupCard> {
             ),
             title: Text(
               style: Theme.of(context).textTheme.titleMedium,
-              chatGroup.name,
+              widget.goto == "chat" ? "Group Chat" : chatGroup.name,
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {

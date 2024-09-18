@@ -70,8 +70,9 @@ class ChangeableField {
                 if (file != null) {
                   var imageData = await file.readAsBytes();
                   imageData = compressAndResizeImage(imageData, size: 64);
-                  setter(base64Encode(imageData));
-                  setState(() {});
+                  setState(() {
+                    setter(base64Encode(imageData));
+                  });
                 }
               },
               child: const Text("Change Image"),
@@ -96,12 +97,28 @@ class ChangeableField {
             setter(double.parse(value));
           },
         ),
-      FieldType.BOOL => Switch(
-          value: getter(),
-          onChanged: (value) {
-            setter(value);
-          },
-        ),
+      FieldType.BOOL => name == "Ready"
+          ? ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  setter(!getter());
+                });
+              },
+              child: Text(getter() ? "Unready" : "Ready"),
+            )
+          : Column(
+              children: [
+                Text(name),
+                Switch(
+                  value: getter(),
+                  onChanged: (value) {
+                    setState(() {
+                      setter(value);
+                    });
+                  },
+                ),
+              ],
+            ),
     };
   }
 

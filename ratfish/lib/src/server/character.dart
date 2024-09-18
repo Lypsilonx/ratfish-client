@@ -7,6 +7,7 @@ class Character extends ServerObject {
   String name;
   String image;
   String description;
+  bool ready = false;
 
   Character({
     required super.id,
@@ -15,6 +16,7 @@ class Character extends ServerObject {
     required this.name,
     required this.image,
     required this.description,
+    required this.ready,
   });
 
   static Character empty = Character(
@@ -24,17 +26,18 @@ class Character extends ServerObject {
     name: "",
     image: "",
     description: "",
+    ready: false,
   );
 
   factory Character.fromMap(Map<String, dynamic> map) {
     return Character(
-      id: map['id'],
-      accountId: map['accountId'],
-      chatGroupId: map['chatGroupId'],
-      name: map['name'],
-      image: map['image'] ?? "",
-      description: map['description'] ?? "",
-    );
+        id: map['id'],
+        accountId: map['accountId'],
+        chatGroupId: map['chatGroupId'],
+        name: map['name'],
+        image: map['image'] ?? "",
+        description: map['description'] ?? "",
+        ready: map['ready'] == "1");
   }
 
   @override
@@ -46,6 +49,7 @@ class Character extends ServerObject {
       'name': name,
       'image': image,
       'description': description,
+      'ready': ready,
     };
   }
 
@@ -75,6 +79,15 @@ class Character extends ServerObject {
         },
         () => description,
         FieldType.LONG_STRING,
+      ),
+      ChangeableField(
+        "Ready",
+        (bool value) {
+          ready = value;
+        },
+        () => ready,
+        FieldType.BOOL,
+        accessMode: AccessMode.WRITE,
       ),
     ];
   }
