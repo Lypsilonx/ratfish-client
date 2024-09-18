@@ -25,7 +25,7 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.tertiary,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           backgroundImage: getImageData(serverObject).isNotEmpty
               ? Image.memory(base64Decode(getImageData(serverObject))).image
               : null,
@@ -46,7 +46,7 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(
                     width: 2,
-                    color: Theme.of(context).colorScheme.tertiary,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   color: Theme.of(context).colorScheme.surface,
                 ),

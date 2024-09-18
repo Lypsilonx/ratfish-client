@@ -38,6 +38,7 @@ class ChangeableField {
     InputDecoration decoration = InputDecoration(
       labelText: name,
       border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
         borderSide: BorderSide(
           color: Theme.of(context).colorScheme.secondary,
         ),
@@ -46,7 +47,7 @@ class ChangeableField {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 10),
+        padding: const EdgeInsets.only(left: 20, right: 20),
         child: switch (type) {
           FieldType.SHORT_STRING => TextFormField(
               initialValue: getter(),
@@ -72,7 +73,7 @@ class ChangeableField {
                 // Image from blob
                 CircleAvatar(
                   radius: 60,
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   backgroundImage:
                       image.isNotEmpty ? Image.memory(image).image : null,
                 ),
@@ -149,82 +150,88 @@ class ChangeableField {
 
   Widget renderReadonly(BuildContext context) {
     return Center(
-      child: switch (type) {
-        FieldType.SHORT_STRING => name == "ID"
-            ? ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                tileColor: Theme.of(context).colorScheme.primaryContainer,
-                title: Text(
-                  "$name: ${getter()}",
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-                leading: Icon(Icons.copy,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer),
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: getter()));
-                },
-              )
-            : ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                tileColor: Theme.of(context).colorScheme.primaryContainer,
-                subtitle: Text(
-                  getter(),
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                ),
-                title: Text(name,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20),
+        child: switch (type) {
+          FieldType.SHORT_STRING => name == "ID"
+              ? ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  tileColor: Theme.of(context).colorScheme.primaryContainer,
+                  title: Text(
+                    "$name: ${getter()}",
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
                           color:
                               Theme.of(context).colorScheme.onPrimaryContainer,
-                        )),
+                        ),
+                  ),
+                  leading: Icon(Icons.copy,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer),
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: getter()));
+                  },
+                )
+              : ListTile(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  tileColor: Theme.of(context).colorScheme.primaryContainer,
+                  subtitle: Text(
+                    getter(),
+                    style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                          color:
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                        ),
+                  ),
+                  title: Text(name,
+                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          )),
+                ),
+          FieldType.LONG_STRING => ListTile(
+              minTileHeight: 100,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-        FieldType.LONG_STRING => ListTile(
-            minTileHeight: 100,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            tileColor: Theme.of(context).colorScheme.primaryContainer,
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                getter(),
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              tileColor: Theme.of(context).colorScheme.primaryContainer,
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  getter(),
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimaryContainer),
+                ),
+              ),
+              title: Text(
+                name,
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer),
               ),
             ),
-            title: Text(
-              name,
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                  color: Theme.of(context).colorScheme.onPrimaryContainer),
+          FieldType.IMAGE => CircleAvatar(
+              radius: 60,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundImage: getter().isNotEmpty
+                  ? Image.memory(base64Decode(getter())).image
+                  : null,
             ),
-          ),
-        FieldType.IMAGE => CircleAvatar(
-            radius: 60,
-            backgroundColor: Theme.of(context).colorScheme.tertiary,
-            backgroundImage: getter().isNotEmpty
-                ? Image.memory(base64Decode(getter())).image
-                : null,
-          ),
-        FieldType.INT => ListTile(
-            subtitle: Text(getter().toString()),
-            title: Text(name),
-          ),
-        FieldType.DOUBLE => ListTile(
-            subtitle: Text(getter().toString()),
-            title: Text(name),
-          ),
-        FieldType.BOOL => ListTile(
-            subtitle: Text(getter() ? "Yes" : "No"),
-            title: Text(name),
-          ),
-      },
+          FieldType.INT => ListTile(
+              subtitle: Text(getter().toString()),
+              title: Text(name),
+            ),
+          FieldType.DOUBLE => ListTile(
+              subtitle: Text(getter().toString()),
+              title: Text(name),
+            ),
+          FieldType.BOOL => ListTile(
+              subtitle: Text(getter() ? "Yes" : "No"),
+              title: Text(name),
+            ),
+        },
+      ),
     );
   }
 }

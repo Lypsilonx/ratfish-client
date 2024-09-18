@@ -2,6 +2,7 @@ import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/server/server_object.dart';
+import 'package:ratfish/src/util.dart';
 
 class EditView<T extends ServerObject> extends StatefulWidget {
   final String id;
@@ -36,7 +37,10 @@ class _EditViewState<T extends ServerObject> extends State<EditView<T>> {
                 ? IconButton(
                     icon: const Icon(Icons.save),
                     onPressed: () {
-                      Client.setServerObject<T>(cachedServerObject!, widget.id);
+                      Util.executeWhenOK(
+                          Client.setServerObject<T>(
+                              cachedServerObject!, widget.id),
+                          context);
                       Navigator.pop(context);
                     },
                   )

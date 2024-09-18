@@ -72,7 +72,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     search(searchController.text);
                   },
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 10),
               ],
             ),
             const SizedBox(height: 20),
@@ -95,6 +95,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                       ...snapshot.data!.map(
                         (chatGroupId) {
                           return Dismissible(
+                            direction: DismissDirection.endToStart,
                             background: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),

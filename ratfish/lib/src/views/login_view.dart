@@ -14,7 +14,7 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  bool register = false;
+  bool register = true;
   String userName = "";
   String password = "";
   String confirmPassword = "";
@@ -35,6 +35,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: RatfishLogo(),
         automaticallyImplyLeading: false,

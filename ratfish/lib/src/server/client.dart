@@ -20,11 +20,14 @@ class Client {
 
   static Future<Response> get(Map<String, String> data) async {
     try {
-      var request =
-          "http://politischdekoriert.de/ratfish-api/endpoint.php?data=${Uri.encodeComponent(jsonEncode(data))}";
-      // print("GET: $request");
-      var response = await http.read(Uri.parse(request));
-      return Response.fromString(response);
+      var request = "http://politischdekoriert.de/ratfish-api/endpoint.php";
+      var serverResponse =
+          await http.post(Uri.parse(request), body: jsonEncode(data));
+      var repsponse = Response.fromString(serverResponse.body);
+      if (repsponse.statusCode != 200) {
+        print(repsponse.body);
+      }
+      return repsponse;
     } catch (e) {
       return Response(400, {"message": "Failed to connect to server\n$e"});
     }
@@ -99,6 +102,28 @@ class Client {
 
     await SettingsController.instance.updatePrivateKey(privateKey);
     return await setPublicKey(publicKey);
+  }
+
+  static Future<String> changePassword(
+      String oldPassword, String newPassword, String confirmPassword) async {
+    if (newPassword != confirmPassword) {
+      return "Passwords do not match";
+    }
+
+    var response = await get(
+      {
+        "action": "changePassword",
+        "userName": instance.self.userName,
+        "oldPassword": oldPassword,
+        "newPassword": newPassword,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return response.body["message"];
+    }
+
+    return "OK";
   }
 
   static Future<String> logout() async {
