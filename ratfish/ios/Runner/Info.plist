@@ -50,5 +50,8 @@
 
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Ratfish needs access to the photo library to select photos and videos.</string>
+
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Ratfish needs access to the microphone to record audio for voice messages.</string>
 	</dict>
 </plist>
