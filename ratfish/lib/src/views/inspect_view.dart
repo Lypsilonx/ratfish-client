@@ -1,3 +1,4 @@
+import 'package:ratfish/src/elements/server_object_icon.dart';
 import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,13 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
       builder: (BuildContext context, BoxConstraints constraints) {
         Future<T> futureServerObject = Client.getServerObject<T>(widget.id);
         return Scaffold(
-          appBar: AppBar(),
+          appBar: AppBar(
+            title: Icon(
+              ServerObjectIcon.getIconData<T>(),
+              color: Theme.of(context).colorScheme.primary,
+              size: 50,
+            ),
+          ),
           body: FutureBuilder<T>(
             future: futureServerObject,
             builder: (context, snapshot) {

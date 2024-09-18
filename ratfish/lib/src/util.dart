@@ -63,6 +63,33 @@ class Util {
     ));
   }
 
+  static Future<bool> confirmDialog(BuildContext context, String title,
+      String content, String confirmText) async {
+    return await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              child: Text(confirmText),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   static void popUpDialog(BuildContext context, String title, String content,
       String confirmText, void Function() confirmAction) {
     showDialog(

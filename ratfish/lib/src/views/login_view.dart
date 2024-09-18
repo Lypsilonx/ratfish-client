@@ -40,16 +40,20 @@ class _LoginViewState extends State<LoginView> {
         automaticallyImplyLeading: false,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(60),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-                const SizedBox(height: 40),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
                   register ? 'Register' : 'Login',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 TextFormField(
                   autocorrect: false,
                   decoration: const InputDecoration(
@@ -73,25 +77,23 @@ class _LoginViewState extends State<LoginView> {
                     });
                   },
                 ),
-              ] +
-              (register
-                  ? [
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        autocorrect: false,
-                        decoration: const InputDecoration(
-                          labelText: 'Confirm Password',
-                        ),
-                        onChanged: (String value) {
-                          setState(() {
-                            confirmPassword = value;
-                          });
-                        },
-                      ),
-                    ]
-                  : <Widget>[]) +
-              [
-                const SizedBox(height: 60),
+                if (register) const SizedBox(height: 20),
+                if (register)
+                  TextFormField(
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm Password',
+                    ),
+                    onChanged: (String value) {
+                      setState(() {
+                        confirmPassword = value;
+                      });
+                    },
+                  ),
+              ],
+            ),
+            Column(
+              children: [
                 TextButton(
                   style: ButtonStyle(
                       backgroundColor: WidgetStateProperty.all<Color>(
@@ -130,6 +132,8 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
               ],
+            ),
+          ],
         ),
       ),
     );

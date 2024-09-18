@@ -1,8 +1,4 @@
-import 'dart:convert';
-
-import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/elements/server_object_icon.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/server/server_object.dart';
@@ -40,57 +36,13 @@ class _ServerObjectCardState<T extends ServerObject>
 
         if (snapshot.hasData) {
           T serverObject = snapshot.data!;
-
-          var typeName = T.toString();
-          var iconData = Icons.error;
-          if (typeName == (Account).toString()) {
-            iconData = Icons.person;
-          }
-          if (typeName == (Character).toString()) {
-            iconData = Icons.theater_comedy;
-          }
-          if (typeName == (ChatGroup).toString()) {
-            iconData = Icons.group;
-          }
-          var icon = Icon(iconData,
-              color: Theme.of(context).colorScheme.primary, size: 15);
-
           return ListTile(
-            contentPadding: const EdgeInsets.all(20),
-            leading: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.tertiary,
-                  backgroundImage: widget.getImageData(serverObject).isNotEmpty
-                      ? Image.memory(
-                              base64Decode(widget.getImageData(serverObject)))
-                          .image
-                      : null,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 25, top: 25),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            width: 2,
-                            color: Theme.of(context).colorScheme.tertiary,
-                          ),
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                        height: 22,
-                        width: 22,
-                      ),
-                      icon,
-                    ],
-                  ),
-                ),
-              ],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
+            contentPadding:
+                const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
+            leading: ServerObjectIcon<T>(serverObject, widget.getImageData),
             title: Text(
               style: Theme.of(context).textTheme.titleMedium,
               widget.getDisplayName(serverObject),

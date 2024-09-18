@@ -1,3 +1,5 @@
+import 'package:ratfish/src/elements/ratfish_logo.dart';
+import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
@@ -39,10 +41,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
     return Scaffold(
       bottomNavigationBar: NavBar(ChatsGroupListView.routeName),
       appBar: AppBar(
-        title: Text(
-          'Chat Groups',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        title: RatfishLogo(),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -52,6 +51,7 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
             Flex(
               direction: Axis.horizontal,
               children: [
+                const SizedBox(width: 20),
                 Expanded(
                   child: TextFormField(
                     controller: searchController,
@@ -65,12 +65,14 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     },
                   ),
                 ),
+                const SizedBox(width: 20),
                 IconButton(
-                  icon: const Icon(Icons.search),
+                  icon: const Icon(Icons.arrow_forward),
                   onPressed: () async {
                     search(searchController.text);
                   },
                 ),
+                const SizedBox(width: 20),
               ],
             ),
             const SizedBox(height: 20),
@@ -92,11 +94,50 @@ class _ChatsGroupListViewState extends State<ChatsGroupListView> {
                     if (snapshot.data!.isNotEmpty)
                       ...snapshot.data!.map(
                         (chatGroupId) {
-                          return ChatGroupCard(chatGroupId, goto: "open");
+                          return Dismissible(
+                            background: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.red,
+                              ),
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              child:
+                                  const Icon(Icons.delete, color: Colors.white),
+                            ),
+                            key: Key(chatGroupId),
+                            confirmDismiss: (direction) async {
+                              var chatGroup =
+                                  await Client.getServerObject<ChatGroup>(
+                                      chatGroupId);
+                              return await Util.confirmDialog(
+                                context,
+                                "Leave \"${chatGroup.name}\"",
+                                "Are you sure you want to leave the chat group ${chatGroup.name}?",
+                                "Leave",
+                              );
+                            },
+                            onDismissed: (direction) async {
+                              Util.executeWhenOK(
+                                Client.leaveChatGroup(chatGroupId),
+                                context,
+                                onOK: () {
+                                  setState(() {
+                                    chatGroupIds = Client.getChatGroupIds();
+                                  });
+                                },
+                              );
+                            },
+                            child: ChatGroupCard(chatGroupId, goto: "open"),
+                          );
                         },
                       ),
                     ListTile(
-                      leading: const Icon(Icons.add),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      contentPadding: const EdgeInsets.only(left: 23),
+                      leading: const Icon(Icons.add, size: 30),
                       title: const Text('Create Chat Group'),
                       onTap: () {
                         Util.askForString(

@@ -24,7 +24,7 @@ class _SettingsViewState extends State<SettingsView> {
       appBar: AppBar(
         title: Text(
           'Settings',
-          style: Theme.of(context).textTheme.titleLarge,
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
       body: ListView(
@@ -142,6 +142,7 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
 
+                const SizedBox(height: 20),
                 // Logout
                 TextButton(
                   style: TextButton.styleFrom(

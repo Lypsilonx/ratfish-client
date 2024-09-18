@@ -1,7 +1,6 @@
 import 'package:ratfish/src/elements/server_object_card.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
-import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/views/chat_view.dart';
@@ -53,26 +52,6 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
                 );
                 break;
             }
-          },
-          onLongPress: (BuildContext context, ChatGroup chatGroup) {
-            Util.popUpDialog(
-              context,
-              "Leave chat group?",
-              "Are you sure you want to leave the chat group ${chatGroup.name}?",
-              "Leave",
-              () {
-                Util.executeWhenOK(
-                  Client.leaveChatGroup(chatGroup.id),
-                  context,
-                  onOK: () {
-                    Navigator.pop(context);
-
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, "/", (route) => false);
-                  },
-                );
-              },
-            );
           },
         );
 }

@@ -112,15 +112,38 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.lock),
-                                  const Text("This chat group is locked."),
-                                  Text("${accountIds.length} members"),
+                                  const Icon(Icons.lock, size: 40),
+                                  const SizedBox(height: 20),
+                                  const Text("This chat group is locked"),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      accountIds.length < 3
+                                          ? const Icon(Icons.close,
+                                              color: Colors.red)
+                                          : const Icon(Icons.check,
+                                              color: Colors.green),
+                                      const Text("min player ammount"),
+                                    ],
+                                  ),
                                   FutureBuilder(
                                     future: readyAccounts,
                                     builder: (context, snapshot) {
                                       if (snapshot.hasData) {
-                                        return Text(
-                                            "(${snapshot.data!} ready)");
+                                        return Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            snapshot.data! < accountIds.length
+                                                ? const Icon(Icons.close,
+                                                    color: Colors.red)
+                                                : const Icon(Icons.check,
+                                                    color: Colors.green),
+                                            Text(
+                                                "(${snapshot.data!}/${accountIds.length}) ready"),
+                                          ],
+                                        );
                                       } else {
                                         return const Text("Loading...");
                                       }
