@@ -61,16 +61,18 @@ class _CharacterCardState extends State<CharacterCard> {
               overflow: TextOverflow.ellipsis,
             ),
             onTap: () async {
-              if (widget.chatGroupId == "" || !widget.locked) {
+              if (widget.chatGroupId == "") {
                 Navigator.pushNamed(context, InspectView.routeName, arguments: {
                   "type": (Character).toString(),
                   "id": character.id
                 });
               } else if (widget.openEditView) {
-                Navigator.pushNamed(context, EditView.routeName, arguments: {
-                  "type": (Character).toString(),
-                  "id": character.id,
-                });
+                Navigator.pushNamed(context,
+                    widget.locked ? EditView.routeName : InspectView.routeName,
+                    arguments: {
+                      "type": (Character).toString(),
+                      "id": character.id,
+                    });
               } else {
                 var chatId = await Client.getChatIdCharacter(
                     widget.chatGroupId, character.id);

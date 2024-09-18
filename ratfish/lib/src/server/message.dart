@@ -59,7 +59,7 @@ class Message extends ServerObject {
     return [
       ChangeableField("Content", (value) {
         content = value;
-        editTimestamp = DateTime.now().microsecondsSinceEpoch.toString();
+        editTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
       }, () => content, FieldType.LONG_STRING),
     ];
   }

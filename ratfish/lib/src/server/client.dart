@@ -22,7 +22,7 @@ class Client {
     try {
       var request =
           "http://politischdekoriert.de/ratfish-api/endpoint.php?data=${Uri.encodeComponent(jsonEncode(data))}";
-      print("GET: $request");
+      // print("GET: $request");
       var response = await http.read(Uri.parse(request));
       return Response.fromString(response);
     } catch (e) {

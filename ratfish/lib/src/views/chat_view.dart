@@ -29,7 +29,6 @@ class ChatView extends StatefulWidget {
 class _ChatViewState extends State<ChatView> {
   ScrollController scrollController = ScrollController();
   final List<chatview.Message> _messages = [];
-  bool messagesLoaded = false;
   late Timer updateTimer;
 
   chatview.ChatController? chatController;
@@ -39,7 +38,7 @@ class _ChatViewState extends State<ChatView> {
     super.initState();
 
     //call updateChat every 20 seconds
-    updateTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
+    updateTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       updateChat();
     });
   }
@@ -54,14 +53,24 @@ class _ChatViewState extends State<ChatView> {
     var messages = await Client.getChatMessagesFull(widget.chatId);
 
     for (var message in messages) {
-      if (_messages.any((element) => element.id == message.id)) {
-        continue;
-      }
-      _messages.add(
-        await buildMessage(message),
-      );
-      if (chatController != null) {
-        chatController!.addMessage(
+      if (message.editTimestamp != "") {
+        var editTimestamp = int.parse(message.editTimestamp);
+        if (_messages.any((element) =>
+            element.id == message.id &&
+            element.createdAt.millisecondsSinceEpoch != editTimestamp)) {
+          _messages.removeWhere((element) => element.id == message.id);
+          _messages.add(await buildMessage(message, edit: true));
+        } else {
+          if (_messages.any((element) => element.id == message.id)) {
+            continue;
+          }
+          _messages.add(await buildMessage(message, edit: true));
+        }
+      } else {
+        if (_messages.any((element) => element.id == message.id)) {
+          continue;
+        }
+        _messages.add(
           await buildMessage(message),
         );
       }
@@ -70,24 +79,24 @@ class _ChatViewState extends State<ChatView> {
     // sort messages by date
     _messages.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-    setState(() {
-      messagesLoaded = true;
-    });
+    if (chatController != null) {
+      chatController!.loadMoreData([]);
+    }
   }
 
-  Future<chatview.Message> buildMessage(Message message) async {
+  Future<chatview.Message> buildMessage(Message message,
+      {bool edit = false}) async {
     return chatview.Message(
       id: message.id,
       sentBy: message.senderId,
-      createdAt:
-          DateTime.fromMillisecondsSinceEpoch(int.parse(message.timestamp)),
-      // updatedAt: message.editTimestamp != ""
-      //     ? int.parse(message.editTimestamp)
-      //     : null,
+      createdAt: message.editTimestamp != ""
+          ? DateTime.fromMillisecondsSinceEpoch(
+              int.parse(message.editTimestamp))
+          : DateTime.fromMillisecondsSinceEpoch(int.parse(message.timestamp)),
       status: chatview.MessageStatus.delivered,
       replyMessage:
           chatview.ReplyMessage.fromJson(jsonDecode(message.replyMessage)),
-      message: message.content,
+      message: message.content + (edit ? " (edited)" : ""),
     );
   }
 
@@ -105,7 +114,7 @@ class _ChatViewState extends State<ChatView> {
       String characterId, List<chatview.ChatUser> users) async {
     await updateChat().then((value) {
       chatController = chatview.ChatController(
-        initialMessageList: List.from(_messages),
+        initialMessageList: _messages,
         scrollController: ScrollController(),
         currentUser: users.firstWhere((element) => element.id == characterId),
         otherUsers:
@@ -191,9 +200,12 @@ class _ChatViewState extends State<ChatView> {
                 },
               ),
               featureActiveConfig: const chatview.FeatureActiveConfig(
-                lastSeenAgoBuilderVisibility: true,
-                receiptsBuilderVisibility: true,
+                enableSwipeToSeeTime: false,
+                lastSeenAgoBuilderVisibility: false,
+                receiptsBuilderVisibility: false,
                 enableScrollToBottomButton: true,
+                enableReactionPopup: false,
+                enableDoubleTapToLike: false,
               ),
               scrollToBottomButtonConfig: chatview.ScrollToBottomButtonConfig(
                 backgroundColor: Theme.of(context).colorScheme.surface,
@@ -223,15 +235,6 @@ class _ChatViewState extends State<ChatView> {
                     : CharacterCard(chatMemberIds.firstWhere(
                         (element) => element != characterId,
                       )),
-                actions: [
-                  SizedBox(
-                    width: 55,
-                    child: IconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: updateChat,
-                    ),
-                  ),
-                ],
               ),
               chatBackgroundConfig: chatview.ChatBackgroundConfiguration(
                 messageTimeIconColor: Theme.of(context).colorScheme.secondary,
@@ -258,13 +261,13 @@ class _ChatViewState extends State<ChatView> {
                 textFieldBackgroundColor: Theme.of(context).colorScheme.primary,
                 closeIconColor: Theme.of(context).colorScheme.onTertiary,
                 textFieldConfig: chatview.TextFieldConfiguration(
-                  onMessageTyping: (status) {
-                    /// Do with status
-                    debugPrint(status.toString());
-                  },
-                  compositionThresholdTime: const Duration(seconds: 1),
                   textStyle:
                       TextStyle(color: Theme.of(context).colorScheme.onPrimary),
+                  hintStyle: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onPrimary
+                          .withAlpha(100)),
                 ),
                 micIconColor: Theme.of(context).colorScheme.onPrimary,
                 voiceRecordingConfiguration:
@@ -333,7 +336,6 @@ class _ChatViewState extends State<ChatView> {
                   Client.deleteMessage(characterId, message.id).then((value) {
                     _messages
                         .removeWhere((element) => element.id == message.id);
-                    chatController = null;
                     setState(() {});
                   });
                 },
@@ -348,9 +350,13 @@ class _ChatViewState extends State<ChatView> {
                 },
               ),
               reactionPopupConfig: chatview.ReactionPopupConfiguration(
+                overrideUserReactionCallback: true,
+                userReactionCallback: (message, reaction) {
+                  debugPrint("User reacted with $reaction");
+                },
                 shadow: BoxShadow(
                   color: Theme.of(context).colorScheme.shadow,
-                  blurRadius: 20,
+                  blurRadius: 0,
                 ),
                 backgroundColor: Theme.of(context).colorScheme.surface,
               ),
