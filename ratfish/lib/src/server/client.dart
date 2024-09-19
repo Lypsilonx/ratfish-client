@@ -134,6 +134,22 @@ class Client {
     return "OK";
   }
 
+  static Future<String> deleteAccount() async {
+    var response = await get(
+      {
+        "action": "deleteAccount",
+        "userId": instance.self.id,
+        "accessToken": SettingsController.instance.accessToken,
+      },
+    );
+
+    if (response.statusCode != 200) {
+      return response.body["message"];
+    }
+
+    return await logout();
+  }
+
   // Getters
   static Future<T> getServerObject<T extends ServerObject>(String id) async {
     var response = await get(

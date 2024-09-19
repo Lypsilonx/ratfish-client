@@ -8,12 +8,13 @@ class ServerObjectCard<T extends ServerObject> extends StatefulWidget {
   final Function getImageData;
   final Function getDisplayName;
   final Function getSubtitle;
-  final Function onTap;
+  final Future<void> Function(BuildContext context, T serverObject) onTap;
   final Function? onLongPress;
+  final Widget Function(BuildContext context, T serverObject)? trailing;
 
   const ServerObjectCard(this.id, this.getImageData, this.getDisplayName,
       this.getSubtitle, this.onTap,
-      {super.key, this.onLongPress});
+      {super.key, this.onLongPress, this.trailing});
 
   @override
   State<ServerObjectCard<T>> createState() => _ServerObjectCardState();
@@ -55,8 +56,19 @@ class _ServerObjectCardState<T extends ServerObject>
                     overflow: TextOverflow.ellipsis,
                   )
                 : null,
+            trailing: widget.trailing != null
+                ? widget.trailing!(context, serverObject)
+                : null,
             onTap: () async {
-              widget.onTap(context, serverObject);
+              widget.onTap(context, serverObject).then(
+                (value) async {
+                  await Client.getServerObject<T>(widget.id).then((value) {
+                    setState(() {
+                      serverObject = value;
+                    });
+                  });
+                },
+              );
             },
           );
         } else {

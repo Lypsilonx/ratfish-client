@@ -35,7 +35,9 @@ class _SettingsViewState extends State<SettingsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AccountCard(Client.instance.self.id),
+                AccountCard(
+                  Client.instance.self.id,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   "General",
@@ -181,6 +183,52 @@ class _SettingsViewState extends State<SettingsView> {
                         ),
                         Icon(
                           Icons.logout,
+                          color: Theme.of(context).colorScheme.onError,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                // Delete Account
+                TextButton(
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () {
+                    Util.popUpDialog(
+                      context,
+                      "Delete Account",
+                      "Are you sure you want to delete your Account?",
+                      "Delete",
+                      () async {
+                        await Client.deleteAccount();
+
+                        Navigator.pushReplacementNamed(
+                            context, LoginView.routeName);
+                      },
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 10, right: 10, top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Delete Account',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge!
+                              .copyWith(
+                                  color: Theme.of(context).colorScheme.onError),
+                        ),
+                        Icon(
+                          Icons.delete,
                           color: Theme.of(context).colorScheme.onError,
                         ),
                       ],

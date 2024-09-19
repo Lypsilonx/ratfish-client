@@ -1,9 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/server_object.dart';
 
 class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
@@ -18,7 +15,7 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Icon icon = Icon(getIconData<T>(),
+    Icon icon = Icon(ServerObject.getIconData<T>(),
         color: Theme.of(context).colorScheme.primary, size: 15);
 
     return Stack(
@@ -32,7 +29,7 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
         ),
         if (getImageData(serverObject).isEmpty)
           Icon(
-            getIconData<T>(),
+            ServerObject.getIconData<T>(),
             color: Theme.of(context).colorScheme.onSecondary,
             size: 25,
           ),
@@ -59,20 +56,5 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  static IconData getIconData<T extends ServerObject>() {
-    var typeName = T.toString();
-    var iconData = Icons.error;
-    if (typeName == (Account).toString()) {
-      iconData = Icons.person;
-    }
-    if (typeName == (Character).toString()) {
-      iconData = Icons.theater_comedy;
-    }
-    if (typeName == (ChatGroup).toString()) {
-      iconData = Icons.group;
-    }
-    return iconData;
   }
 }

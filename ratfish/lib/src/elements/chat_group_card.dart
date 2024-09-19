@@ -1,4 +1,6 @@
 import 'package:ratfish/src/elements/server_object_card.dart';
+import 'package:ratfish/src/elements/server_object_icon.dart';
+import 'package:ratfish/src/server/character.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
@@ -18,7 +20,7 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
           (BuildContext context, ChatGroup chatGroup) async {
             switch (goto) {
               case "info":
-                Navigator.pushNamed(
+                await Navigator.pushNamed(
                   context,
                   InspectView.routeName,
                   arguments: {
@@ -27,7 +29,7 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
                   },
                 );
               case "edit":
-                Navigator.pushNamed(
+                await Navigator.pushNamed(
                   context,
                   EditView.routeName,
                   arguments: {
@@ -36,12 +38,12 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
                   },
                 );
               case "open":
-                Navigator.pushNamed(context, ChatGroupView.routeName,
+                await Navigator.pushNamed(context, ChatGroupView.routeName,
                     arguments: {"chatGroupId": chatGroup.id});
                 break;
               case "chat":
                 var chatId = await Client.getChatIdGroup(chatGroup.id);
-                Navigator.pushNamed(
+                await Navigator.pushNamed(
                   context,
                   ChatView.routeName,
                   arguments: {
@@ -52,6 +54,44 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
                 );
                 break;
             }
+          },
+          trailing: (BuildContext context, ChatGroup chatGroup) {
+            Future<Character> character = Client.getCharacterId(
+              chatGroup.id,
+              Client.instance.self.id,
+            ).then(
+              (characterId) async => await Client.getServerObject(characterId),
+            );
+
+            return goto == "open"
+                ? FutureBuilder(
+                    future: character,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError) {
+                        return const Icon(Icons.error);
+                      }
+
+                      if (snapshot.hasData) {
+                        return GestureDetector(
+                          onTap: () async {
+                            await Navigator.pushNamed(
+                              context,
+                              InspectView.routeName,
+                              arguments: {
+                                "id": snapshot.data!.id,
+                                "type": (Character).toString(),
+                              },
+                            );
+                          },
+                          child: ServerObjectIcon<Character>(snapshot.data!,
+                              (Character character) => character.image),
+                        );
+                      } else {
+                        return const SizedBox();
+                      }
+                    },
+                  )
+                : const SizedBox();
           },
         );
 }

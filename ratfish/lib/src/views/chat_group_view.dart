@@ -1,9 +1,12 @@
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
+import 'package:ratfish/src/elements/server_object_icon.dart';
+import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
 import 'package:ratfish/src/server/chat_group.dart';
 import 'package:flutter/material.dart';
+import 'package:ratfish/src/views/inspect_view.dart';
 
 class ChatGroupView extends StatefulWidget {
   final String chatGroupId;
@@ -62,9 +65,72 @@ class _ChatGroupViewState extends State<ChatGroupView> {
 
                   if (snapshot.hasData) {
                     var accountIds = snapshot.data!;
+
+                    Future<List<Account>> accounts = Future.wait(accountIds.map(
+                        (accountId) =>
+                            Client.getServerObject<Account>(accountId)));
+
                     return ListView(
                       controller: ScrollController(),
                       children: [
+                        FutureBuilder(
+                          future: accounts,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return ListTile(
+                                  title: Text(
+                                      "Error loading accounts: ${snapshot.error}"));
+                            }
+
+                            if (snapshot.hasData) {
+                              List<Account> accounts = snapshot.data!;
+
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        ...accounts.map(
+                                          (account) => GestureDetector(
+                                            onTap: () async {
+                                              await Navigator.pushNamed(
+                                                context,
+                                                InspectView.routeName,
+                                                arguments: {
+                                                  "type": (Account).toString(),
+                                                  "id": account.id,
+                                                },
+                                              );
+                                            },
+                                            child: Column(
+                                              children: [
+                                                ServerObjectIcon<Account>(
+                                                  account,
+                                                  (Account account) =>
+                                                      account.image,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    Text(
+                                        "${accounts.sublist(0, accounts.length - 1).map((account) => account.displayName).join(", ")} & ${accounts.last.displayName}"),
+                                  ],
+                                ),
+                              );
+                            } else {
+                              return const ListTile(
+                                leading: CircularProgressIndicator(),
+                                title: Text("Loading..."),
+                              );
+                            }
+                          },
+                        ),
                         if (!locked) ChatGroupCard(chatGroup.id, goto: "chat"),
                         ...accountIds
                             .where(

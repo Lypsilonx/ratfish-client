@@ -1,4 +1,3 @@
-import 'package:ratfish/src/elements/server_object_icon.dart';
 import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +25,7 @@ class _InspectViewState<T extends ServerObject> extends State<InspectView<T>> {
         return Scaffold(
           appBar: AppBar(
             title: Icon(
-              ServerObjectIcon.getIconData<T>(),
+              ServerObject.getIconData<T>(),
               color: Theme.of(context).colorScheme.primary,
               size: 50,
             ),

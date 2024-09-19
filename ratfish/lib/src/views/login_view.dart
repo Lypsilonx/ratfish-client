@@ -69,6 +69,7 @@ class _LoginViewState extends State<LoginView> {
                 const SizedBox(height: 20),
                 TextFormField(
                   autocorrect: false,
+                  obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Password',
                   ),
@@ -82,6 +83,7 @@ class _LoginViewState extends State<LoginView> {
                 if (register)
                   TextFormField(
                     autocorrect: false,
+                    obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Confirm Password',
                     ),

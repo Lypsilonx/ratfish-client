@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:ratfish/src/server/account.dart';
 import 'package:ratfish/src/server/changeable_field.dart';
 import 'package:ratfish/src/server/character.dart';
@@ -24,6 +25,24 @@ abstract class ServerObject {
     } else {
       throw UnimplementedError();
     }
+  }
+
+  static IconData getIconData<T extends ServerObject>() {
+    var typeName = T.toString();
+    var iconData = Icons.error;
+    if (typeName == (Account).toString()) {
+      iconData = Icons.person;
+    }
+    if (typeName == (Character).toString()) {
+      iconData = Icons.theater_comedy;
+    }
+    if (typeName == (ChatGroup).toString()) {
+      iconData = Icons.group;
+    }
+    if (typeName == (Message).toString()) {
+      iconData = Icons.message;
+    }
+    return iconData;
   }
 
   Map<String, dynamic> toMap();

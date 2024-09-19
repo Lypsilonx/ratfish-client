@@ -134,7 +134,18 @@ class _ChatViewState extends State<ChatView> {
         Client.getCharacterId(widget.chatGroupId, Client.instance.self.id);
     Future<List<chatview.ChatUser>> futureUsers = futureChatMemberIds.then(
       (chatMemberIds) async {
-        return Future.wait(chatMemberIds.map((e) => buildUser(e)).toList());
+        return Future.wait(chatMemberIds.map((e) => buildUser(e)).followedBy(
+          [
+            Future.value(
+              chatview.ChatUser(
+                id: "deleted",
+                name: "Deleted User",
+                profilePhoto: null,
+                imageType: chatview.ImageType.base64,
+              ),
+            )
+          ],
+        ).toList());
       },
     );
     var chatControllerReady = Completer();
@@ -232,10 +243,15 @@ class _ChatViewState extends State<ChatView> {
               ),
               appBar: AppBar(
                 title: widget.isGroup
-                    ? ChatGroupCard(id, goto: "info")
-                    : CharacterCard(chatMemberIds.firstWhere(
-                        (element) => element != characterId,
-                      )),
+                    ? ChatGroupCard(
+                        id,
+                        goto: "info",
+                      )
+                    : CharacterCard(
+                        chatMemberIds.firstWhere(
+                          (element) => element != characterId,
+                        ),
+                      ),
               ),
               chatBackgroundConfig: chatview.ChatBackgroundConfiguration(
                 messageTimeIconColor: Theme.of(context).colorScheme.secondary,

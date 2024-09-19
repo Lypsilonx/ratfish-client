@@ -22,12 +22,13 @@ class CharacterCard extends ServerObjectCard<Character> {
           (Character character) => openEditView ? "" : character.pronouns,
           (BuildContext context, Character character) async {
             if (chatGroupId == "") {
-              Navigator.pushNamed(context, InspectView.routeName, arguments: {
-                "type": (Character).toString(),
-                "id": character.id
-              });
+              await Navigator.pushNamed(context, InspectView.routeName,
+                  arguments: {
+                    "type": (Character).toString(),
+                    "id": character.id
+                  });
             } else if (openEditView) {
-              Navigator.pushNamed(
+              await Navigator.pushNamed(
                   context, locked ? EditView.routeName : InspectView.routeName,
                   arguments: {
                     "type": (Character).toString(),
@@ -36,7 +37,7 @@ class CharacterCard extends ServerObjectCard<Character> {
             } else {
               var chatId =
                   await Client.getChatIdCharacter(chatGroupId, character.id);
-              Navigator.pushNamed(
+              await Navigator.pushNamed(
                 context,
                 ChatView.routeName,
                 arguments: {
