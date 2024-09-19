@@ -118,8 +118,9 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                                         )
                                       ],
                                     ),
-                                    Text(
-                                        "${accounts.sublist(0, accounts.length - 1).map((account) => account.displayName).join(", ")} & ${accounts.last.displayName}"),
+                                    Text(accounts.length == 1
+                                        ? accounts.first.displayName
+                                        : "${accounts.sublist(0, accounts.length - 1).map((account) => account.displayName).join(", ")} & ${accounts.last.displayName}"),
                                   ],
                                 ),
                               );
