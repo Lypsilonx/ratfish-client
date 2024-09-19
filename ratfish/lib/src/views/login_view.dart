@@ -32,6 +32,22 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  void submit() {
+    Util.executeWhenOK(
+      register
+          ? Client.register(userName, password, confirmPassword)
+          : Client.login(userName, password),
+      context,
+      onOK: () {
+        setState(
+          () {
+            Navigator.pushReplacementNamed(context, "/");
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +94,11 @@ class _LoginViewState extends State<LoginView> {
                       password = value;
                     });
                   },
+                  onFieldSubmitted: (String value) {
+                    if (!register) {
+                      submit();
+                    }
+                  },
                 ),
                 if (register) const SizedBox(height: 20),
                 if (register)
@@ -92,6 +113,9 @@ class _LoginViewState extends State<LoginView> {
                         confirmPassword = value;
                       });
                     },
+                    onFieldSubmitted: (String value) {
+                      submit();
+                    },
                   ),
               ],
             ),
@@ -102,20 +126,7 @@ class _LoginViewState extends State<LoginView> {
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Theme.of(context).colorScheme.primary)),
                   onPressed: () async {
-                    Util.executeWhenOK(
-                      register
-                          ? Client.register(userName, password, confirmPassword)
-                          : Client.login(userName, password),
-                      context,
-                      onOK: () {
-                        setState(
-                          () {
-                            Navigator.pushReplacementNamed(context, "/");
-                            //loginStep = 1;
-                          },
-                        );
-                      },
-                    );
+                    submit();
                   },
                   child: Text(
                     style: TextStyle(

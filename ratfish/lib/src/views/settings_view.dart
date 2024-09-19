@@ -161,9 +161,8 @@ class _SettingsViewState extends State<SettingsView> {
                       "Logout",
                       () async {
                         await Client.logout();
-
-                        Navigator.pushReplacementNamed(
-                            context, LoginView.routeName);
+                        Navigator.popUntil(context, (_) => false);
+                        Navigator.pushNamed(context, LoginView.routeName);
                       },
                     );
                   },
