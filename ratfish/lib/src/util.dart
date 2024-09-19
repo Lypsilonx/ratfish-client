@@ -2,9 +2,35 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import "package:pointycastle/export.dart";
 
 class Util {
+  static Uint8List compressAndResizeImage(Uint8List imageData,
+      {int size = 800, int quality = 85}) {
+    img.Image image = img.decodeImage(imageData.toList())!;
+
+    // Resize the image to have the longer side be 800 pixels
+    int width;
+    int height;
+
+    if (image.width > image.height) {
+      width = size;
+      height = (image.height / image.width * size).round();
+    } else {
+      height = size;
+      width = (image.width / image.height * size).round();
+    }
+
+    img.Image resizedImage =
+        img.copyResize(image, width: width, height: height);
+
+    // Compress the image with JPEG format
+    List<int> compressedBytes = img.encodeJpg(resizedImage, quality: quality);
+
+    return Uint8List.fromList(compressedBytes);
+  }
+
   static void executeWhenOK(
     Future<String> result,
     BuildContext context, {

@@ -1,5 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:chatview/chatview.dart' as chatview;
 
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
@@ -8,8 +14,8 @@ import 'package:ratfish/src/server/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 
-import 'package:chatview/chatview.dart' as chatview;
 import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/edit_view.dart';
 import 'package:ratfish/src/views/inspect_view.dart';
 
@@ -86,8 +92,39 @@ class _ChatViewState extends State<ChatView> {
 
   Future<chatview.Message> buildMessage(Message message,
       {bool edit = false}) async {
+    String content;
+    if (message.type == "text" || message.type == "") {
+      content = message.content + (edit ? " (edited)" : "");
+    } else if (message.type == "image") {
+      var tempDir = await getTemporaryDirectory();
+
+      if (File("${tempDir.path}/image_${message.id}.png").existsSync()) {
+        content = "image_${message.id}.png";
+      }
+      var bytes = base64Decode(message.media);
+      var file = File("${tempDir.path}/image_${message.id}.png");
+      await file.writeAsBytes(bytes);
+      content = file.path;
+    } else if (message.type == "voice") {
+      var tempDir = await getTemporaryDirectory();
+
+      if (File("${tempDir.path}/voice_${message.id}.m4a").existsSync()) {
+        content = "voice_${message.id}.m4a";
+      }
+      var bytes = base64Decode(message.media);
+      var file = File("${tempDir.path}/voice_${message.id}.m4a");
+      await file.writeAsBytes(bytes);
+      content = file.path;
+    } else {
+      content = "Unknown message type";
+    }
     return chatview.Message(
       id: message.id,
+      messageType: message.type == "image"
+          ? chatview.MessageType.image
+          : message.type == "voice"
+              ? chatview.MessageType.voice
+              : chatview.MessageType.text,
       sentBy: message.senderId,
       createdAt: message.editTimestamp != ""
           ? DateTime.fromMillisecondsSinceEpoch(
@@ -96,7 +133,7 @@ class _ChatViewState extends State<ChatView> {
       status: chatview.MessageStatus.delivered,
       replyMessage:
           chatview.ReplyMessage.fromJson(jsonDecode(message.replyMessage)),
-      message: message.content + (edit ? " (edited)" : ""),
+      message: content,
     );
   }
 
@@ -482,13 +519,50 @@ class _ChatViewState extends State<ChatView> {
   ) async {
     var messageObject = Message(
       id: "",
+      type: messageType.toString().split('.').last,
       chatId: widget.chatId,
       senderId: characterId,
-      content: message,
+      content: "",
+      media: "",
       editTimestamp: "",
       replyMessage: jsonEncode(replyMessage),
       timestamp: "",
     );
+    switch (messageType) {
+      case chatview.MessageType.text:
+        messageObject.content = message;
+        break;
+      case chatview.MessageType.image:
+        var imageFile = File(message);
+
+        var bytes = await imageFile.readAsBytes();
+
+        bytes = Util.compressAndResizeImage(bytes, size: 256);
+        messageObject.media = base64Encode(bytes);
+        break;
+      case chatview.MessageType.voice:
+        var audioFile = File(message);
+
+        var session = await FFmpegKit.execute(
+            "-i ${audioFile.path} -ar 16000 -b:a 32000 -ac 1 ${audioFile.path.replaceAll(".m4a", "_converted.m4a")}");
+
+        final returnCode = await session.getReturnCode();
+        if (!ReturnCode.isSuccess(returnCode)) {
+          Util.showErrorScaffold(context, "Error converting audio file");
+          return;
+        }
+        audioFile = File(audioFile.path.replaceAll(".m4a", "_converted.m4a"));
+        if (await audioFile.length() > 64000) {
+          Util.showErrorScaffold(context, "Audio file too large");
+          return;
+        }
+
+        var bytes = await audioFile.readAsBytes();
+        messageObject.media = base64Encode(bytes);
+        break;
+      case chatview.MessageType.custom:
+        break;
+    }
     await Client.addMessage(
       messageObject,
     );

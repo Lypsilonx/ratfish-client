@@ -3,6 +3,13 @@ PODS:
     - Flutter
   - emoji_picker_flutter (0.0.1):
     - Flutter
+  - ffmpeg-kit-ios-https (6.0.LTS)
+  - ffmpeg_kit_flutter (6.0.3.LTS):
+    - ffmpeg_kit_flutter/https-lts (= 6.0.3.LTS)
+    - Flutter
+  - ffmpeg_kit_flutter/https-lts (6.0.3.LTS):
+    - ffmpeg-kit-ios-https (= 6.0.LTS)
+    - Flutter
   - Flutter (1.0.0)
   - image_picker_ios (0.0.1):
     - Flutter
@@ -21,6 +28,7 @@ PODS:
 DEPENDENCIES:
   - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - emoji_picker_flutter (from `.symlinks/plugins/emoji_picker_flutter/ios`)
+  - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - Flutter (from `Flutter`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
@@ -28,11 +36,17 @@ DEPENDENCIES:
   - sqflite (from `.symlinks/plugins/sqflite/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
+SPEC REPOS:
+  trunk:
+    - ffmpeg-kit-ios-https
+
 EXTERNAL SOURCES:
   audio_waveforms:
     :path: ".symlinks/plugins/audio_waveforms/ios"
   emoji_picker_flutter:
     :path: ".symlinks/plugins/emoji_picker_flutter/ios"
+  ffmpeg_kit_flutter:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   Flutter:
     :path: Flutter
   image_picker_ios:
@@ -49,6 +63,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   audio_waveforms: cd736909ebc6b6a164eb74701d8c705ce3241e1c
   emoji_picker_flutter: fe2e6151c5b548e975d546e6eeb567daf0962a58
+  ffmpeg-kit-ios-https: 7a080cfc0755cb388ee3a0a78470fecc6d6591af
+  ffmpeg_kit_flutter: df593798d7ef7b85c76ec236e77d66143dfee4a9
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
