@@ -3,6 +3,7 @@ import 'package:ratfish/src/elements/server_object_icon.dart';
 import 'package:ratfish/src/server/objects/character.dart';
 import 'package:ratfish/src/server/objects/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
+import 'package:ratfish/src/server/objects/message.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:flutter/material.dart';
 import 'package:ratfish/src/views/chat_view.dart';
@@ -15,7 +16,58 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
           id,
           (ChatGroup chatGroup) =>
               goto == "chat" ? "Group Chat" : chatGroup.name,
-          (ChatGroup chatGroup) => "",
+          (BuildContext context, ChatGroup chatGroup) {
+            if (goto == "info" || goto == "edit") {
+              return Text(
+                chatGroup.description,
+                style: Theme.of(context).textTheme.bodySmall,
+              );
+            }
+
+            if (goto == "chat") {
+              Future<Message?> lastMessage = Client.getChatIdGroup(chatGroup.id)
+                  .then((value) => Client.getLastMessage(value));
+              Future<Character> character = lastMessage.then(
+                (message) =>
+                    Client.getServerObject<Character>(message!.senderId),
+              );
+
+              return FutureBuilder(
+                future: Future.wait([lastMessage, character]),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Text(
+                      "Error loading: Message (${chatGroup.id})\n${snapshot.error}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    );
+                  }
+
+                  if (snapshot.hasData) {
+                    Message? message = snapshot.data![0] as Message?;
+                    Character character = snapshot.data![1] as Character;
+
+                    if (message == null) {
+                      return const SizedBox();
+                    }
+
+                    return Text(
+                      "${character.name}: ${message.content}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  }
+
+                  return Text(
+                    "",
+                    style: Theme.of(context).textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  );
+                },
+              );
+            }
+
+            return null;
+          },
           (BuildContext context, ChatGroup chatGroup) async {
             switch (goto) {
               case "info":
@@ -55,6 +107,10 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
             }
           },
           trailing: (BuildContext context, ChatGroup chatGroup) {
+            if (goto != "open") {
+              return const SizedBox();
+            }
+
             Future<Character> character = Client.getCharacterId(
               chatGroup.id,
               Client.instance.self.id,
@@ -62,25 +118,23 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
               (characterId) async => await Client.getServerObject(characterId),
             );
 
-            return goto == "open"
-                ? FutureBuilder(
-                    future: character,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return const Icon(Icons.error);
-                      }
+            return FutureBuilder(
+              future: character,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Icon(Icons.error);
+                }
 
-                      if (snapshot.hasData) {
-                        return ServerObjectIcon<Character>(
-                          snapshot.data!,
-                          inspect: true,
-                        );
-                      } else {
-                        return const SizedBox();
-                      }
-                    },
-                  )
-                : const SizedBox();
+                if (snapshot.hasData) {
+                  return ServerObjectIcon<Character>(
+                    snapshot.data!,
+                    inspect: true,
+                  );
+                } else {
+                  return const SizedBox();
+                }
+              },
+            );
           },
         );
 }

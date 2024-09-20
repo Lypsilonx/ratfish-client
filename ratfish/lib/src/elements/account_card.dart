@@ -8,7 +8,7 @@ import 'package:ratfish/src/views/inspect_view.dart';
 class AccountCard extends ServerObjectCard<Account> {
   AccountCard(String id, {super.key})
       : super(id, (Account account) => account.displayName,
-            (Account account) => account.pronouns,
+            (BuildContext context, Account account) => account.pronouns,
             (BuildContext context, Account account) async {
           await Navigator.pushNamed(
             context,

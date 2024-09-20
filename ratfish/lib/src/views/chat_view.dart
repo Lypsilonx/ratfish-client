@@ -93,6 +93,8 @@ class _ChatViewState extends State<ChatView> {
 
   Future<chatview.Message> buildMessage(Message message,
       {bool edit = false}) async {
+    bool voiceAllowed = !(kIsWeb || !(Platform.isAndroid || Platform.isIOS));
+
     String content;
     if (message.type == "text" || message.type == "") {
       content = message.content + (edit ? " (edited)" : "");
@@ -112,8 +114,8 @@ class _ChatViewState extends State<ChatView> {
         content = file.path;
       }
     } else if (message.type == "voice") {
-      if (kIsWeb) {
-        content = "data:audio/m4a;base64," + message.media;
+      if (!voiceAllowed) {
+        content = "Voice message";
       } else {
         var tempDir = await getTemporaryDirectory();
 
@@ -132,7 +134,7 @@ class _ChatViewState extends State<ChatView> {
       id: message.id,
       messageType: message.type == "image"
           ? chatview.MessageType.image
-          : message.type == "voice"
+          : message.type == "voice" && voiceAllowed
               ? chatview.MessageType.voice
               : chatview.MessageType.text,
       sentBy: message.senderId,
@@ -183,6 +185,14 @@ class _ChatViewState extends State<ChatView> {
       (chatMemberIds) async {
         return Future.wait(chatMemberIds.map((e) => buildUser(e)).followedBy(
           [
+            Future.value(
+              chatview.ChatUser(
+                id: "ratfish",
+                name: "Ratfish",
+                profilePhoto: null,
+                imageType: chatview.ImageType.base64,
+              ),
+            ),
             Future.value(
               chatview.ChatUser(
                 id: "deleted",

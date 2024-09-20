@@ -3,17 +3,20 @@ import 'package:ratfish/src/server/server_object.dart';
 
 class ChatGroup extends ServerObject {
   String name;
+  String description;
 
   ChatGroup({
     required super.id,
     required super.image,
     required this.name,
+    required this.description,
   });
 
   static ChatGroup empty = ChatGroup(
     id: "",
     image: "",
     name: "",
+    description: "",
   );
 
   factory ChatGroup.fromMap(Map<String, dynamic> map) {
@@ -21,6 +24,7 @@ class ChatGroup extends ServerObject {
       id: map['id'],
       image: map['image'] ?? "",
       name: map['name'],
+      description: map['description'] ?? "",
     );
   }
 
@@ -30,6 +34,7 @@ class ChatGroup extends ServerObject {
       'id': id,
       'image': image,
       'name': name,
+      'description': description,
     };
   }
 
@@ -51,6 +56,14 @@ class ChatGroup extends ServerObject {
         },
         () => name,
         FieldType.SHORT_STRING,
+      ),
+      ChangeableField(
+        "Description",
+        (String value) {
+          description = value;
+        },
+        () => description,
+        FieldType.LONG_STRING,
       ),
       ChangeableField(
         "ID",

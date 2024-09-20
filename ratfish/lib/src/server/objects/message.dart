@@ -41,7 +41,7 @@ class Message extends ServerObject {
       type: map['type'] ?? "text",
       chatId: map['chatId'],
       senderId: map['senderId'],
-      content: map['content'],
+      content: map['content'] ?? "",
       media: map['media'] ?? "",
       editTimestamp: map['editTimestamp'] ?? "",
       replyMessage: map['replyMessage'] ?? "",

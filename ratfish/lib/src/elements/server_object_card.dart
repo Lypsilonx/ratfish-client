@@ -6,7 +6,7 @@ import 'package:ratfish/src/server/server_object.dart';
 class ServerObjectCard<T extends ServerObject> extends StatefulWidget {
   final String id;
   final Function getDisplayName;
-  final Function getSubtitle;
+  final Function(BuildContext context, T serverObject) getSubtitle;
   final Future<void> Function(BuildContext context, T serverObject) onTap;
   final Function? onLongPress;
   final Widget Function(BuildContext context, T serverObject)? trailing;
@@ -36,6 +36,9 @@ class _ServerObjectCardState<T extends ServerObject>
 
         if (snapshot.hasData) {
           T serverObject = snapshot.data!;
+
+          var subtitle = widget.getSubtitle(context, serverObject);
+
           return ListTile(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -48,13 +51,15 @@ class _ServerObjectCardState<T extends ServerObject>
               widget.getDisplayName(serverObject),
               overflow: TextOverflow.ellipsis,
             ),
-            subtitle: widget.getSubtitle(serverObject) != ""
+            subtitle: subtitle is String && subtitle != ""
                 ? Text(
                     style: Theme.of(context).textTheme.bodySmall,
-                    widget.getSubtitle(serverObject),
+                    subtitle,
                     overflow: TextOverflow.ellipsis,
                   )
-                : null,
+                : subtitle is Widget
+                    ? subtitle
+                    : null,
             trailing: widget.trailing != null
                 ? widget.trailing!(context, serverObject)
                 : null,

@@ -35,8 +35,8 @@ class Character extends ServerObject {
     return Character(
         id: map['id'],
         image: map['image'] ?? "",
-        accountId: map['accountId'],
-        chatGroupId: map['chatGroupId'],
+        accountId: map['accountId'] ?? "",
+        chatGroupId: map['chatGroupId'] ?? "",
         name: map['name'],
         pronouns: map['pronouns'] ?? "",
         description: map['description'] ?? "",
