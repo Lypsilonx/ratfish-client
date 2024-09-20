@@ -20,14 +20,14 @@ class Client {
 
   static Future<Response> get(Map<String, String> data) async {
     try {
-      var request = "http://politischdekoriert.de/ratfish-api/endpoint.php";
+      var request = "https://politischdekoriert.de/ratfish-api/endpoint.php";
       var serverResponse =
           await http.post(Uri.parse(request), body: jsonEncode(data));
-      var repsponse = Response.fromString(serverResponse.body);
-      if (repsponse.statusCode != 200) {
-        print(repsponse.body);
+      var response = Response.fromString(serverResponse.body);
+      if (response.statusCode != 200) {
+        print(response.body);
       }
-      return repsponse;
+      return response;
     } catch (e) {
       return Response(400, {"message": "Failed to connect to server\n$e"});
     }
@@ -154,7 +154,7 @@ class Client {
   static Future<T> getServerObject<T extends ServerObject>(String id) async {
     var response = await get(
       {
-        "action": "get$T",
+        "action": "get${ServerObject.getName<T>()}",
         "id": id,
       },
     );
@@ -321,7 +321,7 @@ class Client {
       T serverObject, String id) async {
     var response = await get(
       {
-        "action": "set$T",
+        "action": "set${ServerObject.getName<T>()}",
         "id": id,
         "userId": instance.self.id,
         "accessToken": SettingsController.instance.accessToken,

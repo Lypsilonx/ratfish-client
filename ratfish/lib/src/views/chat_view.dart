@@ -18,6 +18,7 @@ import 'package:ratfish/src/server/message.dart';
 import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/edit_view.dart';
 import 'package:ratfish/src/views/inspect_view.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ChatView extends StatefulWidget {
   final String chatGroupId;
@@ -96,25 +97,34 @@ class _ChatViewState extends State<ChatView> {
     if (message.type == "text" || message.type == "") {
       content = message.content + (edit ? " (edited)" : "");
     } else if (message.type == "image") {
-      var tempDir = await getTemporaryDirectory();
+      // is this a web build?
+      if (kIsWeb) {
+        content = "data:image/png;base64," + message.media;
+      } else {
+        var tempDir = await getTemporaryDirectory();
 
-      if (File("${tempDir.path}/image_${message.id}.png").existsSync()) {
-        content = "image_${message.id}.png";
+        if (File("${tempDir.path}/image_${message.id}.png").existsSync()) {
+          content = "image_${message.id}.png";
+        }
+        var bytes = base64Decode(message.media);
+        var file = File("${tempDir.path}/image_${message.id}.png");
+        await file.writeAsBytes(bytes);
+        content = file.path;
       }
-      var bytes = base64Decode(message.media);
-      var file = File("${tempDir.path}/image_${message.id}.png");
-      await file.writeAsBytes(bytes);
-      content = file.path;
     } else if (message.type == "voice") {
-      var tempDir = await getTemporaryDirectory();
+      if (kIsWeb) {
+        content = "data:audio/m4a;base64," + message.media;
+      } else {
+        var tempDir = await getTemporaryDirectory();
 
-      if (File("${tempDir.path}/voice_${message.id}.m4a").existsSync()) {
-        content = "voice_${message.id}.m4a";
+        if (File("${tempDir.path}/voice_${message.id}.m4a").existsSync()) {
+          content = "voice_${message.id}.m4a";
+        }
+        var bytes = base64Decode(message.media);
+        var file = File("${tempDir.path}/voice_${message.id}.m4a");
+        await file.writeAsBytes(bytes);
+        content = file.path;
       }
-      var bytes = base64Decode(message.media);
-      var file = File("${tempDir.path}/voice_${message.id}.m4a");
-      await file.writeAsBytes(bytes);
-      content = file.path;
     } else {
       content = "Unknown message type";
     }

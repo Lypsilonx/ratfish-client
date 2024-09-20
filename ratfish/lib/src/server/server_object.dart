@@ -12,6 +12,21 @@ abstract class ServerObject {
 
   List<ChangeableField> getChangeableFields();
 
+  static String getName<T extends ServerObject>() {
+    var typeName = T.toString();
+    if (typeName == (Account).toString()) {
+      return 'Account';
+    } else if (typeName == (Character).toString()) {
+      return 'Character';
+    } else if (typeName == (ChatGroup).toString()) {
+      return 'ChatGroup';
+    } else if (typeName == (Message).toString()) {
+      return 'Message';
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   static T fromMap<T extends ServerObject>(Map<String, dynamic> map) {
     var typeName = T.toString();
     if (typeName == (Account).toString()) {
