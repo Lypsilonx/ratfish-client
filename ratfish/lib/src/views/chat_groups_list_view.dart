@@ -1,5 +1,5 @@
 import 'package:ratfish/src/elements/ratfish_logo.dart';
-import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';

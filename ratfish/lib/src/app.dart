@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
-import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/server/objects/account.dart';
+import 'package:ratfish/src/server/objects/character.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
+import 'package:ratfish/src/server/objects/message.dart';
 import 'package:ratfish/src/views/chat_view.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:ratfish/src/views/chat_groups_list_view.dart';

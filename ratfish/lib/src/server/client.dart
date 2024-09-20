@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:ratfish/src/server/account.dart';
-import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/server/objects/account.dart';
+import 'package:ratfish/src/server/objects/message.dart';
 import 'package:ratfish/src/server/response.dart';
 import 'package:ratfish/src/server/server_object.dart';
 import 'package:ratfish/src/settings/settings_controller.dart';
@@ -154,7 +154,7 @@ class Client {
   static Future<T> getServerObject<T extends ServerObject>(String id) async {
     var response = await get(
       {
-        "action": "get${ServerObject.getName<T>()}",
+        "action": "get${ServerObject.getClassName<T>()}",
         "id": id,
       },
     );
@@ -321,7 +321,7 @@ class Client {
       T serverObject, String id) async {
     var response = await get(
       {
-        "action": "set${ServerObject.getName<T>()}",
+        "action": "set${ServerObject.getClassName<T>()}",
         "id": id,
         "userId": instance.self.id,
         "accessToken": SettingsController.instance.accessToken,

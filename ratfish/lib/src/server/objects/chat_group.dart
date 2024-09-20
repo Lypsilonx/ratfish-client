@@ -3,25 +3,24 @@ import 'package:ratfish/src/server/server_object.dart';
 
 class ChatGroup extends ServerObject {
   String name;
-  String image;
 
   ChatGroup({
     required super.id,
+    required super.image,
     required this.name,
-    required this.image,
   });
 
   static ChatGroup empty = ChatGroup(
     id: "",
-    name: "",
     image: "",
+    name: "",
   );
 
   factory ChatGroup.fromMap(Map<String, dynamic> map) {
     return ChatGroup(
       id: map['id'],
-      name: map['name'],
       image: map['image'] ?? "",
+      name: map['name'],
     );
   }
 
@@ -29,8 +28,8 @@ class ChatGroup extends ServerObject {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
       'image': image,
+      'name': name,
     };
   }
 

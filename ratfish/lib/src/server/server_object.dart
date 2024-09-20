@@ -1,63 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:ratfish/src/server/account.dart';
+import 'package:ratfish/src/server/objects/account.dart';
 import 'package:ratfish/src/server/changeable_field.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
-import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/server/objects/character.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
+import 'package:ratfish/src/server/objects/message.dart';
 
 abstract class ServerObject {
   String id;
+  String image;
 
-  ServerObject({required this.id});
+  ServerObject({required this.id, required this.image});
 
   List<ChangeableField> getChangeableFields();
 
-  static String getName<T extends ServerObject>() {
-    var typeName = T.toString();
-    if (typeName == (Account).toString()) {
-      return 'Account';
-    } else if (typeName == (Character).toString()) {
-      return 'Character';
-    } else if (typeName == (ChatGroup).toString()) {
-      return 'ChatGroup';
-    } else if (typeName == (Message).toString()) {
-      return 'Message';
-    } else {
-      throw UnimplementedError();
-    }
-  }
+  static final Map<Type,
+      (String className, IconData iconData, Function fromMap)> _typeMap = {
+    Account: ('Account', Icons.person, Account.fromMap),
+    Character: ('Character', Icons.theater_comedy, Character.fromMap),
+    ChatGroup: ('ChatGroup', Icons.group, ChatGroup.fromMap),
+    Message: ('Message', Icons.message, Message.fromMap),
+  };
 
-  static T fromMap<T extends ServerObject>(Map<String, dynamic> map) {
-    var typeName = T.toString();
-    if (typeName == (Account).toString()) {
-      return Account.fromMap(map) as T;
-    } else if (typeName == (Character).toString()) {
-      return Character.fromMap(map) as T;
-    } else if (typeName == (ChatGroup).toString()) {
-      return ChatGroup.fromMap(map) as T;
-    } else if (typeName == (Message).toString()) {
-      return Message.fromMap(map) as T;
-    } else {
-      throw UnimplementedError();
-    }
+  static String getClassName<T extends ServerObject>() {
+    return _typeMap[T]!.$1;
   }
 
   static IconData getIconData<T extends ServerObject>() {
-    var typeName = T.toString();
-    var iconData = Icons.error;
-    if (typeName == (Account).toString()) {
-      iconData = Icons.person;
-    }
-    if (typeName == (Character).toString()) {
-      iconData = Icons.theater_comedy;
-    }
-    if (typeName == (ChatGroup).toString()) {
-      iconData = Icons.group;
-    }
-    if (typeName == (Message).toString()) {
-      iconData = Icons.message;
-    }
-    return iconData;
+    return _typeMap[T]!.$2;
+  }
+
+  static T fromMap<T extends ServerObject>(Map<String, dynamic> map) {
+    return _typeMap[T]!.$3(map) as T;
   }
 
   Map<String, dynamic> toMap();

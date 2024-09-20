@@ -9,12 +9,12 @@ import 'package:chatview/chatview.dart' as chatview;
 
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/server/objects/character.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:flutter/material.dart';
 
-import 'package:ratfish/src/server/message.dart';
+import 'package:ratfish/src/server/objects/message.dart';
 import 'package:ratfish/src/util.dart';
 import 'package:ratfish/src/views/edit_view.dart';
 import 'package:ratfish/src/views/inspect_view.dart';

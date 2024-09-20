@@ -86,7 +86,7 @@ class ChangeableField {
                     if (file != null) {
                       var imageData = await file.readAsBytes();
                       imageData =
-                          Util.compressAndResizeImage(imageData, size: 128);
+                          Util.compressAndResizeImage(imageData, size: 256);
                       setter(base64Encode(imageData));
                       onChange();
                     }

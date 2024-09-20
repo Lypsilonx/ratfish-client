@@ -5,17 +5,16 @@ class Account extends ServerObject {
   String userName;
   String displayName;
   String pronouns;
-  String image;
   String description;
 
   final String publicKey;
 
   Account({
     required super.id,
+    required super.image,
     required this.userName,
     required this.displayName,
     required this.pronouns,
-    required this.image,
     required this.description,
     required this.publicKey,
   });
@@ -24,10 +23,10 @@ class Account extends ServerObject {
   factory Account.fromMap(Map<String, dynamic> map) {
     return Account(
       id: map['id'],
+      image: map['image'] ?? "",
       userName: map['userName'],
       displayName: map['displayName'],
       pronouns: map['pronouns'] ?? "",
-      image: map['image'] ?? "",
       description: map['description'] ?? "",
       publicKey: map['publicKey'] ?? "",
     );
@@ -37,10 +36,10 @@ class Account extends ServerObject {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'image': image,
       'userName': userName,
       'displayName': displayName,
       'pronouns': pronouns,
-      'image': image,
       'description': description,
       'publicKey': publicKey,
     };

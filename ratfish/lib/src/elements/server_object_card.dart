@@ -5,15 +5,14 @@ import 'package:ratfish/src/server/server_object.dart';
 
 class ServerObjectCard<T extends ServerObject> extends StatefulWidget {
   final String id;
-  final Function getImageData;
   final Function getDisplayName;
   final Function getSubtitle;
   final Future<void> Function(BuildContext context, T serverObject) onTap;
   final Function? onLongPress;
   final Widget Function(BuildContext context, T serverObject)? trailing;
 
-  const ServerObjectCard(this.id, this.getImageData, this.getDisplayName,
-      this.getSubtitle, this.onTap,
+  const ServerObjectCard(
+      this.id, this.getDisplayName, this.getSubtitle, this.onTap,
       {super.key, this.onLongPress, this.trailing});
 
   @override
@@ -43,7 +42,7 @@ class _ServerObjectCardState<T extends ServerObject>
             ),
             contentPadding:
                 const EdgeInsets.only(left: 15, right: 15, top: 10, bottom: 10),
-            leading: ServerObjectIcon<T>(serverObject, widget.getImageData),
+            leading: ServerObjectIcon<T>(serverObject),
             title: Text(
               style: Theme.of(context).textTheme.titleMedium,
               widget.getDisplayName(serverObject),

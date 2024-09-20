@@ -1,12 +1,12 @@
 import 'package:ratfish/src/elements/character_card.dart';
 import 'package:ratfish/src/elements/chat_group_card.dart';
 import 'package:ratfish/src/elements/server_object_icon.dart';
-import 'package:ratfish/src/server/account.dart';
+import 'package:ratfish/src/server/objects/account.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/elements/nav_bar.dart';
-import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
 import 'package:flutter/material.dart';
-import 'package:ratfish/src/views/inspect_view.dart';
+import 'package:ratfish/src/util.dart';
 
 class ChatGroupView extends StatefulWidget {
   final String chatGroupId;
@@ -94,33 +94,20 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                                           MainAxisAlignment.center,
                                       children: [
                                         ...accounts.map(
-                                          (account) => GestureDetector(
-                                            onTap: () async {
-                                              await Navigator.pushNamed(
-                                                context,
-                                                InspectView.routeName,
-                                                arguments: {
-                                                  "type": (Account).toString(),
-                                                  "id": account.id,
-                                                },
-                                              );
-                                            },
-                                            child: Column(
-                                              children: [
-                                                ServerObjectIcon<Account>(
-                                                  account,
-                                                  (Account account) =>
-                                                      account.image,
-                                                ),
-                                              ],
-                                            ),
+                                          (account) =>
+                                              ServerObjectIcon<Account>(
+                                            account,
+                                            inspect: true,
                                           ),
                                         )
                                       ],
                                     ),
-                                    Text(accounts.length == 1
-                                        ? accounts.first.displayName
-                                        : "${accounts.sublist(0, accounts.length - 1).map((account) => account.displayName).join(", ")} & ${accounts.last.displayName}"),
+                                    Text(
+                                      accounts
+                                          .map((account) => account.displayName)
+                                          .toList()
+                                          .niceJoin(),
+                                    ),
                                   ],
                                 ),
                               );
@@ -149,7 +136,7 @@ class _ChatGroupViewState extends State<ChatGroupView> {
                                   return ListTile(
                                     leading: const Icon(Icons.error),
                                     title: Text(
-                                        "Error loading character: ${chatGroup.id} (${snapshot.error})"),
+                                        "Error loading character: $characterId (${snapshot.error})"),
                                   );
                                 }
 

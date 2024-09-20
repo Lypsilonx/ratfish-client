@@ -1,5 +1,5 @@
 import 'package:ratfish/src/elements/server_object_card.dart';
-import 'package:ratfish/src/server/character.dart';
+import 'package:ratfish/src/server/objects/character.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/views/inspect_view.dart';
 import 'package:ratfish/src/views/chat_view.dart';
@@ -11,7 +11,6 @@ class CharacterCard extends ServerObjectCard<Character> {
       {super.key, chatGroupId = "", openEditView = false, locked = false})
       : super(
           id,
-          (Character character) => character.image,
           (Character character) => openEditView
               ? locked
                   ? character.ready

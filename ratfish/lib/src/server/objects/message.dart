@@ -21,7 +21,7 @@ class Message extends ServerObject {
     required this.editTimestamp,
     required this.replyMessage,
     required this.timestamp,
-  });
+  }) : super(image: "");
 
   static Message empty = Message(
     id: "",

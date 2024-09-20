@@ -6,28 +6,27 @@ class Character extends ServerObject {
   String chatGroupId;
   String name;
   String pronouns;
-  String image;
   String description;
   bool ready = false;
 
   Character({
     required super.id,
+    required super.image,
     required this.accountId,
     required this.chatGroupId,
     required this.name,
     required this.pronouns,
-    required this.image,
     required this.description,
     required this.ready,
   });
 
   static Character empty = Character(
     id: "",
+    image: "",
     accountId: "",
     chatGroupId: "",
     name: "",
     pronouns: "",
-    image: "",
     description: "",
     ready: false,
   );
@@ -35,11 +34,11 @@ class Character extends ServerObject {
   factory Character.fromMap(Map<String, dynamic> map) {
     return Character(
         id: map['id'],
+        image: map['image'] ?? "",
         accountId: map['accountId'],
         chatGroupId: map['chatGroupId'],
         name: map['name'],
         pronouns: map['pronouns'] ?? "",
-        image: map['image'] ?? "",
         description: map['description'] ?? "",
         ready: map['ready'] == "1");
   }
@@ -48,11 +47,11 @@ class Character extends ServerObject {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'image': image,
       'accountId': accountId,
       'chatGroupId': chatGroupId,
       'name': name,
       'pronouns': pronouns,
-      'image': image,
       'description': description,
       'ready': ready,
     };

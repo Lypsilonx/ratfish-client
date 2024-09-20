@@ -1,7 +1,7 @@
 import 'package:ratfish/src/elements/server_object_card.dart';
 import 'package:ratfish/src/elements/server_object_icon.dart';
-import 'package:ratfish/src/server/character.dart';
-import 'package:ratfish/src/server/chat_group.dart';
+import 'package:ratfish/src/server/objects/character.dart';
+import 'package:ratfish/src/server/objects/chat_group.dart';
 import 'package:ratfish/src/server/client.dart';
 import 'package:ratfish/src/views/chat_group_view.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,6 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
   ChatGroupCard(id, {super.key, goto = "info"})
       : super(
           id,
-          (ChatGroup chatGroup) => chatGroup.image,
           (ChatGroup chatGroup) =>
               goto == "chat" ? "Group Chat" : chatGroup.name,
           (ChatGroup chatGroup) => "",
@@ -72,19 +71,9 @@ class ChatGroupCard extends ServerObjectCard<ChatGroup> {
                       }
 
                       if (snapshot.hasData) {
-                        return GestureDetector(
-                          onTap: () async {
-                            await Navigator.pushNamed(
-                              context,
-                              InspectView.routeName,
-                              arguments: {
-                                "id": snapshot.data!.id,
-                                "type": (Character).toString(),
-                              },
-                            );
-                          },
-                          child: ServerObjectIcon<Character>(snapshot.data!,
-                              (Character character) => character.image),
+                        return ServerObjectIcon<Character>(
+                          snapshot.data!,
+                          inspect: true,
                         );
                       } else {
                         return const SizedBox();

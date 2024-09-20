@@ -5,6 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import "package:pointycastle/export.dart";
 
+extension ListExtension on List {
+  String niceJoin() {
+    return length == 1
+        ? first
+        : "${sublist(0, length - 1).map((string) => string).join(", ")} & $last";
+  }
+}
+
 class Util {
   static Uint8List compressAndResizeImage(Uint8List imageData,
       {int size = 800, int quality = 85}) {
