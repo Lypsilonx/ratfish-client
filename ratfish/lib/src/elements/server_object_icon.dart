@@ -27,7 +27,7 @@ class ServerObjectIcon<T extends ServerObject> extends StatelessWidget {
             InspectView.routeName,
             arguments: {
               "id": serverObject.id,
-              "type": ServerObject.getClassName<T>(),
+              "type": (T).toString(),
             },
           );
         }

@@ -70,6 +70,8 @@ class Ratfish extends StatelessWidget {
                     return InspectView<Character>(map["id"] as String);
                   } else if (typeName == (ChatGroup).toString()) {
                     return InspectView<ChatGroup>(map["id"] as String);
+                  } else if (typeName == (Message).toString()) {
+                    return InspectView<Message>(map["id"] as String);
                   }
 
                   throw UnimplementedError();
